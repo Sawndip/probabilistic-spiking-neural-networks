@@ -30,7 +30,9 @@ The specific goal is the development of modus ponens capability:
 ### Example
 
 p: Aristotle can swim
+
 q: Fish can swim
+
 ----------------
 r: Aristotle is a fish
 
@@ -41,3 +43,5 @@ The spiking NN for this task will use token embeddings of **p** and **q** for th
 ## Reusability of the written C++ code as a library for other projects.
 
 ## Wrappers for python, MATLAB, R, etc
+
+## Performance considerations for huge networks. The goal of the project is to use only relatively small networks thus perofmance is a secondary goal.
