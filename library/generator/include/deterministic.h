@@ -1,5 +1,8 @@
 #include "core/include/signal.h"
 
+#include <string>
+#include <bitset>
+
 #ifndef DETERMINISTIC_H
 #define DETERMINISTIC_H
 
@@ -15,5 +18,20 @@
 void generate_cyclic(Signal& signal, 
                      const uint32_t mod,
                      const uint32_t offset);
+
+/*!
+ * \brief
+ *     Morse encoding of the input string with separator_pattern between characters.
+ *     Unknown characters are treated as the '0' character.
+ *     Uppercase letters are treated as lowercase.
+ * \param Signal& signal Signal - Modified in place
+ * \param const std::string& str The string to encode, ideally consisting only of 
+ *                                morse encodable characters. It must always be ASCII.
+ * \param const uint8_t separator_pattern The between character separator pattern
+ *              It should be something like 10101.
+*/
+void generate_morse_encode(Signal& signal,
+                           const std::string& str,
+                           const std::vector<bool>& separator_pattern);
 
 #endif

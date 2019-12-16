@@ -28,6 +28,16 @@ class Signal {
          */
         const uint32_t length();
 
+        /*!
+         * \brief Make all bits zero
+         */
+        void zero();
+
+        /*!
+         * \brief Make all bits one
+         */
+        void one();
+
         Signal();
         Signal(const std::uint32_t time_steps);
 

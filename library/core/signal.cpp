@@ -19,6 +19,14 @@ const uint32_t Signal::length() {
     return this->signal.size();
 }
 
+void Signal::zero() {
+    this->data().assign(this->data().size(), false);
+}
+
+void Signal::one() {
+    this->data().assign(this->data().size(), true);
+}
+
 std::ostream& operator<<(std::ostream& stream, Signal& signal) {
     stream << signal.length() << " ";
     for (bool bit: signal.data()) {

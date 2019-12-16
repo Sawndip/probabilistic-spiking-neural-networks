@@ -13,9 +13,11 @@ function(do_test target arg_1 arg_2 arg_3 arg_4 result)
     add_test(NAME ${test_name}
              COMMAND ${target} ${arg_1} ${arg_2} ${arg_3} ${arg_4})
 
-    set_tests_properties(${test_name}
-        PROPERTIES PASS_REGULAR_EXPRESSION ${result}
-    )
+    if (NOT ${result} STREQUAL "NO_REGEX")
+        set_tests_properties(${test_name}
+            PROPERTIES PASS_REGULAR_EXPRESSION ${result}
+        )
+    endif()
 endfunction(do_test)
 
 ### CYCLIC GENERATOR ###
@@ -31,3 +33,19 @@ do_test(test_cyclic_generator
 do_test(test_cyclic_generator
         20 5 0 "UNUSED"
         "20 \\^____\\^____\\^____\\^____")
+
+### MORSE ENCODING ###
+
+# Test for crash on whole alphabet - should not crash
+do_test(test_morse_encoding "0123456789abcdefghijklmnopqrstuvwxyz" "10101" "UNU1" "UNU2" "NO_REGEX")
+
+#Test for working on uppercase letters
+do_test(test_morse_encoding "fish" "10101" "UNU1" "UNU2" "33 __\\^_\\^_\\^_\\^__\\^_\\^_\\^___\\^_\\^_\\^____\\^_\\^_\\^")
+do_test(test_morse_encoding "FISH" "10101" "UNU1" "UNU2" "33 __\\^_\\^_\\^_\\^__\\^_\\^_\\^___\\^_\\^_\\^____\\^_\\^_\\^")
+
+# Test for working on unknown characters (replace unknown by 0 before encoding)
+do_test(test_morse_encoding "000" "10101" "UNU1" "UNU2" "30 \\^\\^\\^\\^\\^\\^_\\^_\\^\\^\\^\\^\\^\\^\\^_\\^_\\^\\^\\^\\^\\^\\^\\^_\\^_\\^")
+do_test(test_morse_encoding "$!?" "10101" "UNU1" "UNU2" "30 \\^\\^\\^\\^\\^\\^_\\^_\\^\\^\\^\\^\\^\\^\\^_\\^_\\^\\^\\^\\^\\^\\^\\^_\\^_\\^")
+
+# Test for working on empty strings
+do_test(test_morse_encoding "E_M_P_T_Y" "10101" "UNU1" "UNU2" "0 ")
