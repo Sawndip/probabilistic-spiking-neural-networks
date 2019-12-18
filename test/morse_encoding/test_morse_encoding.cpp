@@ -21,24 +21,8 @@ void console_test(int argc, char** argv) {
     std::cout << signal;
 }
 
-void development_test() {
-    // Something which is not any morse code for any character
-    std::vector<bool> separator_pattern = {true, false, true, false, true};
-
-    // Empty string
-    std::string test_str;
-
-    Signal signal;
-
-    generate_morse_encode(signal, test_str, separator_pattern);
-
-    std::cout << signal;
-}
-
 int main(int argc, char** argv) {
     console_test(argc, argv);
     
-    // development_test();
-
     return 0;
 }
