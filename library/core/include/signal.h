@@ -26,7 +26,7 @@ class Signal {
         /*!
          * \brief The number of time steps this signal lasts
          */
-        const uint32_t length();
+        const uint32_t length() const;
 
         /*!
          * \brief Make all bits zero
@@ -37,6 +37,14 @@ class Signal {
          * \brief Make all bits one
          */
         void one();
+
+        /*!
+         * \brief Pad to the right until meeting the target number of time steps.
+         * 
+         * \param uint32_t target_length Number of desired timesteps
+         * \param bool value The value to pad with, default is 0
+         */
+        void pad(const uint32_t target_length, const bool value = false);
 
         Signal();
         Signal(const std::uint32_t time_steps);
@@ -57,6 +65,25 @@ class SignalList {
          * \brief Access the signals of this list. 
          */
         signal_list_t& data();
+
+        /*!
+         * \brief Add a new signal to the end of this list.
+         */ 
+        void add(const Signal& s);
+
+        /*!
+         * \brief Pad all signals so they will have same length as the longest signal.
+         * This method will modify the instance in place.
+         */
+        void equalize_lengths();
+
+        /*!
+         * \brief Concatenate all signals into one.
+         * At the end this SignalList will contain only one signal.
+         * This method will modify the instance in place.
+         */ 
+        // TODO: Develop this method later.
+        // void concatenate();
 
         SignalList();
         SignalList(const uint32_t n_signals);

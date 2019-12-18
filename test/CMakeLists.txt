@@ -49,3 +49,31 @@ do_test(test_morse_encoding "$!?" "10101" "UNU1" "UNU2" "30 \\^\\^\\^\\^\\^\\^_\
 
 # Test for working on empty strings
 do_test(test_morse_encoding "E_M_P_T_Y" "10101" "UNU1" "UNU2" "0 ")
+
+### EQUALIZE LENGTH ###
+
+# first signal is 15 time steps, second is 8
+# both are generated with cyclic generator of mod 3 and offset 1
+do_test(test_equalize_length 15 8 3 1 
+"2 signals[\\r\\n\\t ]*
+15 _\\^__\\^__\\^__\\^__\\^_[\\r\\n\\t ]*
+8 _\\^__\\^__\\^[\\r\\n\\t ]*
+2 signals[\\r\\n\\t ]*
+15 _\\^__\\^__\\^__\\^__\\^_[\\r\\n\\t ]*
+15 _\\^__\\^__\\^_______")
+
+do_test(test_equalize_length 5 5 3 1 
+"2 signals[\\r\\n\\t ]*
+5 _\\^__\\^[\\r\\n\\t ]*
+5 _\\^__\\^[\\r\\n\\t ]*
+2 signals[\\r\\n\\t ]*
+5 _\\^__\\^[\\r\\n\\t ]*
+5 _\\^__\\^") 
+
+do_test(test_equalize_length 0 0 3 1 
+"2 signals[\\r\\n\\t ]*
+0[\\r\\n\\t ]* 
+0[\\r\\n\\t ]* 
+2 signals[\\r\\n\\t ]*
+0[\\r\\n\\t ]* 
+0")
