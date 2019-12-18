@@ -13,3 +13,5 @@ add_test_dir(cyclic_generator)
 add_test_dir(morse_encoding)
 
 add_test_dir(equalize_lengths)
+
+add_test_dir(concatenate)

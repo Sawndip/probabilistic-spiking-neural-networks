@@ -82,8 +82,15 @@ class SignalList {
          * At the end this SignalList will contain only one signal.
          * This method will modify the instance in place.
          */ 
-        // TODO: Develop this method later.
-        // void concatenate();
+        void concatenate();
+
+        /*!
+         * \brief Merge two signal lists into one
+         * 
+         * \param SignalList& other The source of the signals to be merged
+         */
+        // TODO: Implement me later
+        void merge(const SignalList& other);
 
         SignalList();
         SignalList(const uint32_t n_signals);

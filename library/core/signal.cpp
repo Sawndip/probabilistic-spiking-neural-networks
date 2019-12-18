@@ -77,6 +77,21 @@ void SignalList::equalize_lengths() {
     });
 }
 
+void SignalList::concatenate() {
+    // Going backwards concatenate all signals into the first one
+    for (uint32_t i = signals.size() - 1; i > 0; i--) {
+        signal_t& target_sig = signals[i - 1].data();
+        signal_t& source_sig = signals[i].data();
+        
+        target_sig.insert(target_sig.end(), 
+                          source_sig.begin(), 
+                          source_sig.end());
+    }
+
+    // Delete all but the first signal
+    signals.resize(1);
+}
+
 std::ostream& operator<<(std::ostream& stream, SignalList& signals) {
     stream << signals.data().size() << " signals" << std::endl;
 
