@@ -89,7 +89,6 @@ class SignalList {
          * 
          * \param SignalList& other The source of the signals to be merged
          */
-        // TODO: Implement me later
         void merge(const SignalList& other);
 
         SignalList();

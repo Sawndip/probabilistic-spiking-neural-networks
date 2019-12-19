@@ -8,10 +8,14 @@ function (add_test_dir dir_name)
     include(${dir_name}/CMakeLists.txt)
 endfunction()
 
-add_test_dir(cyclic_generator)
+set (test_dirs 
+    # list of directories for whom tests should be conducted
+    cyclic_generator 
+    morse_encoding
+    equalize_lengths
+    concatenate
+    merge)
 
-add_test_dir(morse_encoding)
-
-add_test_dir(equalize_lengths)
-
-add_test_dir(concatenate)
+foreach(td ${test_dirs})
+    add_test_dir(${td})
+endforeach(td in ${test_dirs})

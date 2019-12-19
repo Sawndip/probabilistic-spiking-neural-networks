@@ -92,6 +92,12 @@ void SignalList::concatenate() {
     signals.resize(1);
 }
 
+void SignalList::merge(const SignalList& other) {
+    signals.insert(signals.end(), 
+                   other.signals.cbegin(), 
+                   other.signals.cend());
+}
+
 std::ostream& operator<<(std::ostream& stream, SignalList& signals) {
     stream << signals.data().size() << " signals" << std::endl;
 
