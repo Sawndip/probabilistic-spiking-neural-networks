@@ -15,7 +15,8 @@ set (test_dirs
     equalize_lengths
     concatenate
     merge
-    sigmoid)
+    sigmoid
+    kernels)
 
 foreach(td ${test_dirs})
     add_test_dir(${td})
