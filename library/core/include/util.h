@@ -1,6 +1,8 @@
 #ifndef UTIL_H
 #define UTIL_H
 
+#include "core/include/signal.h"
+
 #include <vector>
 #include <cstdint>
 
@@ -28,5 +30,12 @@ std::vector<double>
 exponentially_decaying_feedback_kernel(
     const std::uint32_t window_size,
     const double time_constant); 
+
+/*!
+ * \brief Convolve the signal with a kernel for one time step t
+ */
+double convolve(const std::vector<double>& kernel,
+                const signal_t& signal, 
+                const std::uint32_t t);
 
 #endif

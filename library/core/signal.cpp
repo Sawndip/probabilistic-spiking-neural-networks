@@ -33,6 +33,16 @@ void Signal::pad(const uint32_t target_length, const bool value) {
     this->signal.resize(target_length, value);
 }
 
+Signal Signal::from_string(std::string spec) {
+    Signal signal(spec.size());
+
+    for(int i = 0; i < spec.size(); i++) {
+        signal.data()[i] = spec[i] == '^';
+    }
+
+    return signal;
+}
+
 std::ostream& operator<<(std::ostream& stream, Signal& signal) {
     stream << signal.length() << " ";
     for (bool bit: signal.data()) {

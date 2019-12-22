@@ -46,6 +46,12 @@ class Signal {
          */
         void pad(const uint32_t target_length, const bool value = false);
 
+        /*!
+         * \brief Construct a signal from string treating ^ as 1, _ as 0 
+         * and everything else as 0 as well
+         */
+        static Signal from_string(std::string spec);
+
         Signal();
         Signal(const std::uint32_t time_steps);
 

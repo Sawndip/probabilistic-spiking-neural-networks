@@ -16,7 +16,8 @@ set (test_dirs
     concatenate
     merge
     sigmoid
-    kernels)
+    kernels
+    convolve)
 
 foreach(td ${test_dirs})
     add_test_dir(${td})

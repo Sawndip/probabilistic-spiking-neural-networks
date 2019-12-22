@@ -58,3 +58,24 @@ exponentially_decaying_feedback_kernel(
 
     return kernel;
 }
+
+double convolve(const std::vector<double>& kernel,
+                const signal_t& signal, 
+                const std::uint32_t t) {
+    // Input checks
+    if (t < 1)
+        throw std::logic_error("The time step must be 1 or greater.");
+    if(kernel.size() < 1)
+        throw std::logic_error("The kernel must have at least one time step");
+    if (signal.size() < 1)
+        throw std::logic_error("The signal must have at least one time step");
+
+    // Convolution code
+    double result = 0;
+
+    for (int i = 0; i < kernel.size() && (int)t - i >= 0; i++) {
+        result += kernel[i] * signal[t - i];
+    }
+
+    return result;
+}
