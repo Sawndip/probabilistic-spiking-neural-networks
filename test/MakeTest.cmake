@@ -13,7 +13,12 @@ function(make_test)
 
     set(target ${ARGV0})
     set(result ${ARGV1})
-    list(SUBLIST ARGV 2 -1 other_args)
+
+    if (${ARGC} GREATER 2)
+        list(SUBLIST ARGV 2 -1 other_args)
+    else()
+        set(other_args "")
+    endif()
 
     # If not built already, build the test executable
     if (NOT TARGET ${target})

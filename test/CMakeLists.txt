@@ -14,7 +14,8 @@ set (test_dirs
     morse_encoding
     equalize_lengths
     concatenate
-    merge)
+    merge
+    sigmoid)
 
 foreach(td ${test_dirs})
     add_test_dir(${td})
