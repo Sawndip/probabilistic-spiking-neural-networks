@@ -17,7 +17,8 @@ set (test_dirs
     merge
     sigmoid
     kernels
-    convolve)
+    convolve
+    network)
 
 foreach(td ${test_dirs})
     add_test_dir(${td})
