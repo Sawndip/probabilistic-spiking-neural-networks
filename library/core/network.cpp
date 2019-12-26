@@ -3,35 +3,55 @@
 #include <random>
 
 // Everything to everything including self loops
-bool fully_connected_init(Neuron n1, Neuron n2) {
-    return true;
+NetworkGeneratorFunction fully_connected_init() {
+    return [](Neuron n1, Neuron n2) -> bool { return true; };
 }
 
 // Perceptron style without self loops
-bool perceptron_init_hidden(Neuron n1, Neuron n2) {
-    if (n1.id == n2.id) {
+NetworkGeneratorFunction perceptron_init_hidden() {
+    return [](Neuron n1, Neuron n2) -> bool {
+        if (n1.id == n2.id) {
+            return false;
+        }
+
+        if (n1.type == NeuronType::INPUT && n2.type == NeuronType::HIDDEN) {
+            return true;
+        } else if (n1.type == NeuronType::HIDDEN && n2.type == NeuronType::OUTPUT) {
+            return true;
+        }
+
         return false;
-    }
-
-    if (n1.type == NeuronType::INPUT && n2.type == NeuronType::HIDDEN) {
-        return true;
-    } else if (n1.type == NeuronType::HIDDEN && n2.type == NeuronType::OUTPUT) {
-        return true;
-    }
-
-    return false;
+    };
 }
 
-bool perceptron_init_simple(Neuron n1, Neuron n2) {
-    if (n1.id == n2.id) {
+NetworkGeneratorFunction perceptron_init_simple() {
+    return [](Neuron n1, Neuron n2) -> bool {
+        if (n1.id == n2.id) {
+            return false;
+        }
+
+        if (n1.type == NeuronType::INPUT && n2.type == NeuronType::OUTPUT) {
+            return true;
+        }
+
         return false;
-    }
+    };
+}
 
-    if (n1.type == NeuronType::INPUT && n2.type == NeuronType::OUTPUT) {
-        return true;
-    }
+NetworkGeneratorFunction random_connections_init(std::default_random_engine generator, 
+                                                 const double p) {
+    if (p <= 0 || p > 1)
+        throw std::logic_error("The probability of a link forming must be in range (0, 1]");
 
-    return false;
+    return [=, &generator](Neuron, Neuron) -> bool {
+        auto dist = std::uniform_real_distribution<double>(0.0, 1.0);
+
+        double u = dist(generator);
+
+        bool make_synapse = u <= p;
+
+        return make_synapse;
+    };
 }
 
 WeightInitializerFunction uniform_weights(std::default_random_engine generator,
@@ -89,10 +109,10 @@ void Network::init_neuron_list() {
     }
 }
 
-void Network::init_connections(NetworkGeneratorFunction synapse_gen_func) {
+void Network::init_connections(NetworkGeneratorFunction network_gen_func) {
     for(auto n1: this->neurons) {
         for (auto n2: this->neurons) {
-            if(synapse_gen_func(n1, n2)) {
+            if(network_gen_func(n1, n2)) {
                 Synapse s = {
                     0.0,
                     n1.id,
@@ -124,7 +144,7 @@ void Network::init_weights(WeightInitializerFunction weight_init_func) {
 Network::Network(uint32_t n_input, 
                  uint32_t n_hidden,
                  uint32_t n_output,
-                 NetworkGeneratorFunction synapse_gen_func,
+                 NetworkGeneratorFunction network_gen_func,
                  WeightInitializerFunction weight_init_func) {
     
     this->n_input = n_input;
@@ -132,6 +152,34 @@ Network::Network(uint32_t n_input,
     this->n_output = n_output;
 
     this->init_neuron_list();
-    this->init_connections(synapse_gen_func);
+    this->init_connections(network_gen_func);
     this->init_weights(weight_init_func);
+}
+
+ostream& operator<<(ostream& out, const Network& net) {
+    out << "NETWORK STATISTICS - NEURONS" << endl;
+
+    out << "INPUT " << net.n_input 
+        << " HIDDEN " << net.n_hidden
+        << " OUTPUT " << net.n_output 
+        << " TOTAL " << net.neurons.size()
+        << endl;
+
+    out << "NETWORK STATISTICS - SYNAPSES" << endl;
+
+    out << "TOTAL SYNAPSES " << net.synapses.size() << endl << endl;
+
+    out << "SYNAPSE ADJACENCY LIST (PRESYNAPTIC | LIST POSTSYNAPTIC | TOTAL POST)" << endl;
+
+    std::array<std::string, 3> type_names = {"INPUT", "HIDDEN", "OUTPUT"};
+
+    for (Neuron n: net.neurons) {
+        out << type_names[n.type] << " " << n.id << " | ";
+        for (NeuronId n2_id: n.successor_neurons) {
+            out << (type_names[net.neurons[n2_id].type]) << " " << n2_id << ", "; 
+        }
+        out << "| " << n.successor_neurons.size() << endl;
+    }
+
+    return out;
 }
