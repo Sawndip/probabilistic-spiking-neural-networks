@@ -2,9 +2,6 @@
 #define NETWORK_H
 
 #include<vector>
-#include<list>
-#include<map>
-#include<tuple>
 #include<cstdint>
 #include<functional>
 #include<random>
@@ -68,11 +65,10 @@ struct Synapse {
 };
 
 /*!
- * The synapse list is actually a map keyed by a 2-tuple of NeuronId 
  * This is intended to be a single source of truth for all synapses/links in the network.
  * All operations must write only to this class instance.
  */
-typedef map<tuple<NeuronId, NeuronId>, Synapse> SynapseList;
+typedef vector<Synapse> SynapseList;
 
 /*!
  * A network generator function specifies if a synapse should be formed between
@@ -82,7 +78,8 @@ typedef map<tuple<NeuronId, NeuronId>, Synapse> SynapseList;
  * The library provided methods, e.g. fully_connected_init will return a 
  * NetworkGeneratorFunction as their output upon invocation.
  */
-typedef function<bool(Neuron, Neuron)> NetworkGeneratorFunction;
+typedef function<bool(const Neuron&, const Neuron&)> 
+NetworkGeneratorFunction;
 
 /*!
  * \brief Every neuron is connected to every other neuron irregardles of the neuron type
@@ -127,7 +124,8 @@ NetworkGeneratorFunction random_connections_init(std::default_random_engine, con
  *  Note: This function is invoked after the network is constructed and it only modifies the weights.
  *  It can not influence the existence of synapses in any form.
  */
-typedef function<double(NeuronList, Neuron, Neuron)> WeightInitializerFunction;
+typedef function<double(const NeuronList&, const Neuron&, const Neuron&)> 
+WeightInitializerFunction;
 
 /*!
  * \brief Draw the weights from a uniform (a, b) distribution.
