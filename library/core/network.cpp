@@ -97,6 +97,7 @@ void Network::init_neuron_list() {
     uint32_t n_total_neurons = n_input + n_hidden + n_output;
 
     this->neurons = NeuronList(n_total_neurons);
+    this->neurons.resize(n_total_neurons);
 
     for (NeuronId i = 0; i < n_total_neurons; i++) {
         NeuronType type;

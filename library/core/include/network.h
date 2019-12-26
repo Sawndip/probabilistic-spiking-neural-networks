@@ -42,8 +42,8 @@ struct Neuron {
     NeuronId id;
     double bias;
 
-    list<NeuronId> predecessor_neurons;
-    list<NeuronId> successor_neurons;
+    vector<NeuronId> predecessor_neurons;
+    vector<NeuronId> successor_neurons;
 };
 
 /*!
