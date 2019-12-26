@@ -61,7 +61,7 @@ int main_test(int argc, char** argv) {
 
     try {
         return test(input_signal_spec, window_size, time_constant);
-    } catch (std::logic_error& err) {
+    } catch (std::invalid_argument& err) {
         std::cout << err.what() << std::endl;
         return -1;
     }

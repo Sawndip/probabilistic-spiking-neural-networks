@@ -1,6 +1,7 @@
 #include "core/include/network.h"
 
 #include <random>
+#include <cmath>
 
 // Everything to everything including self loops
 NetworkGeneratorFunction fully_connected_init() {
@@ -41,7 +42,7 @@ NetworkGeneratorFunction perceptron_init_simple() {
 NetworkGeneratorFunction random_connections_init(std::default_random_engine generator, 
                                                  const double p) {
     if (p <= 0 || p > 1)
-        throw std::logic_error("The probability of a link forming must be in range (0, 1]");
+        throw std::invalid_argument("The probability of a link forming must be in range (0, 1]");
 
     return [=, &generator](Neuron, Neuron) -> bool {
         auto dist = std::uniform_real_distribution<double>(0.0, 1.0);
@@ -86,12 +87,18 @@ WeightInitializerFunction glorot_weights(std::default_random_engine generator) {
 }
 
 void Network::init_neuron_list() {
-    // TODO: Check this is greather than 0, n_input > 0 and n_output > 0 and n_hidden >= 0
+    if (n_input <= 0)
+        throw std::invalid_argument("The number of input neurons must be 1 or greater.");
+    if (n_hidden < 0)
+        throw std::invalid_argument("The number of hidden neurons must be 0 or greater.");
+    if (n_output <= 0)
+        throw std::invalid_argument("The number of output neurons must be 1 or greater.");
+
     uint32_t n_total_neurons = n_input + n_hidden + n_output;
 
     this->neurons = NeuronList(n_total_neurons);
 
-    for (int i = 0; i < n_total_neurons; i++) {
+    for (NeuronId i = 0; i < n_total_neurons; i++) {
         NeuronType type;
 
         if (i < n_input) {
@@ -101,11 +108,10 @@ void Network::init_neuron_list() {
         } else {
             type = NeuronType::OUTPUT;
         }
-
-        this->neurons[i] = Neuron();
-        this->neurons[i].id = i;
-        this->neurons[i].type = type;
-        this->neurons[i].bias = 0.0;
+        
+        this->neurons[i] = {
+            type, i, 0.0
+        };
     }
 }
 
@@ -126,15 +132,20 @@ void Network::init_connections(NetworkGeneratorFunction network_gen_func) {
             }
         }
     }
+
+    if (this->synapses.size() == 0)
+        throw std::logic_error("There are 0 synapses after the construction procedure");
 }
 
 void Network::init_weights(WeightInitializerFunction weight_init_func) {
     for(auto n1: this->neurons) {
         for (NeuronId n2_id: n1.successor_neurons) {
-            // TODO: Checks that w is not NaN and not +- Inf
             double w = weight_init_func(this->neurons, 
                                         n1, 
                                         this->neurons[n2_id]);
+
+            if (!std::isfinite(w))
+                throw std::logic_error("Trying to assign a NaN or infinite weight.");
 
             this->synapses[make_tuple(n1.id, n2_id)].weight = w;
         }
