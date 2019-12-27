@@ -71,6 +71,10 @@ signal_list_t& SignalList::data() {
     return this->signals;
 }
 
+const signal_list_t& SignalList::cdata() const {
+    return this->signals;
+}
+
 void SignalList::add(const Signal& s) {
     this->signals.push_back(s);
 }

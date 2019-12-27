@@ -6,6 +6,7 @@
 #include<functional>
 #include<random>
 
+#include "core/include/util.h"
 #include "core/include/signal.h"
 
 using namespace std;
@@ -62,6 +63,8 @@ struct Synapse {
 
     NeuronId from;
     NeuronId to;
+
+    std::vector<double> kernel;
 };
 
 /*!
@@ -114,6 +117,15 @@ NetworkGeneratorFunction perceptron_init_hidden();
  * Note that this functions returns a function which does the actual work.
  */
 NetworkGeneratorFunction random_connections_init(std::default_random_engine, const double);
+
+typedef function<vector<double>(const Neuron&, const Neuron&)>
+KernelInitializerFunction;
+
+// Default values put up randomly. TODO: Research on sane defaults
+KernelInitializerFunction default_exponential_kernels(const uint32_t time_steps = 7,
+                                                      const double tau1 = 3,
+                                                      const double tau2 = 11,
+                                                      const double tau_m = 5);
 
 /*!
  *  \brief The function which will determine the initial weights for a synapse 
@@ -174,8 +186,11 @@ class Network {
         uint32_t n_output;
 
         void init_neuron_list();
-        void init_connections(NetworkGeneratorFunction synapse_gen_func);
+        void init_connections(NetworkGeneratorFunction synapse_gen_func, 
+                              KernelInitializerFunction kernel_init_func);
         void init_weights(WeightInitializerFunction weight_init_func);
+
+        void check_forward_argument(const SignalList& input);
 
     public:
         /*!
@@ -189,11 +204,12 @@ class Network {
                 uint32_t n_hidden,
                 uint32_t n_output,
                 NetworkGeneratorFunction network_gen_func,
-                WeightInitializerFunction weight_init_func
+                WeightInitializerFunction weight_init_func,
+                KernelInitializerFunction kernel_func = default_exponential_kernels()
                );
 
         /*!
-         *
+         * Before calling this function ensure equalize length is called
          * 
          * 
          */

@@ -72,6 +72,8 @@ class SignalList {
          */
         signal_list_t& data();
 
+        const signal_list_t& cdata() const;
+
         /*!
          * \brief Add a new signal to the end of this list.
          */ 

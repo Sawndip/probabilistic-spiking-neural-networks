@@ -1,7 +1,8 @@
 #include "core/include/network.h"
 
-#include <random>
-#include <cmath>
+#include<random>
+#include<cmath>
+#include<algorithm>
 
 // Everything to everything including self loops
 NetworkGeneratorFunction fully_connected_init() {
@@ -54,6 +55,27 @@ NetworkGeneratorFunction random_connections_init(std::default_random_engine gene
         return make_synapse;
     };
 }
+
+KernelInitializerFunction default_exponential_kernels(const uint32_t time_steps,
+                                                      const double tau1,
+                                                      const double tau2,
+                                                      const double tau_m) {
+    std::vector<double> feedforward_kern = exponentially_decaying_feedforward_kernel(
+        time_steps, tau1, tau2
+    );
+
+    std::vector<double> feedback_kern = exponentially_decaying_feedback_kernel(
+        time_steps, tau_m
+    );
+
+    return [=](const Neuron& n1, const Neuron& n2) {
+        if (n1.id == n2.id)
+            return feedback_kern;
+        else
+            return feedforward_kern;
+    };
+}
+
 
 WeightInitializerFunction uniform_weights(std::default_random_engine generator,
                                           double a, double b) {
@@ -115,7 +137,8 @@ void Network::init_neuron_list() {
     }
 }
 
-void Network::init_connections(NetworkGeneratorFunction network_gen_func) {    
+void Network::init_connections(NetworkGeneratorFunction network_gen_func,
+                               KernelInitializerFunction kernel_init_func) {    
     const uint32_t n_neurons_total = this->neurons.size();
 
     this->synapses = SynapseList(n_neurons_total * n_neurons_total);
@@ -128,6 +151,7 @@ void Network::init_connections(NetworkGeneratorFunction network_gen_func) {
                 this->synapses[idx].weight = 0.0;
                 this->synapses[idx].from   = n1.id;
                 this->synapses[idx].to     = n2.id;
+                this->synapses[idx].kernel = kernel_init_func(n1, n2);
 
                 n1.successor_neurons.push_back(n2.id);
                 n2.predecessor_neurons.push_back(n1.id);
@@ -167,15 +191,50 @@ Network::Network(uint32_t n_input,
                  uint32_t n_hidden,
                  uint32_t n_output,
                  NetworkGeneratorFunction network_gen_func,
-                 WeightInitializerFunction weight_init_func) {
+                 WeightInitializerFunction weight_init_func,
+                 KernelInitializerFunction kernel_init_func) {
     
     this->n_input = n_input;
     this->n_hidden = n_hidden;
     this->n_output = n_output;
 
     this->init_neuron_list();
-    this->init_connections(network_gen_func);
+    this->init_connections(network_gen_func, kernel_init_func);
     this->init_weights(weight_init_func);
+}
+
+void Network::check_forward_argument(const SignalList& input) {
+    // Check if the input signals and the number of input neurons is equal
+    if (input.cdata().size() != this->n_input) {
+        throw std::invalid_argument("The number of input signals must match the number of input neurons");
+    }
+
+    // Check if the input signals are of equal length
+    std::vector<uint32_t> sizes;
+    std::transform(input.cdata().cbegin(), input.cdata().cend(), sizes.begin(),
+    [](const Signal& s) -> uint32_t { return s.length(); });
+
+    std::vector<uint32_t> diff;
+    std::adjacent_difference(sizes.begin(), sizes.end(), diff.begin());
+    if (std::accumulate(diff.begin(), diff.end(), 0) != 0) {
+        throw std::invalid_argument("All input signals must have the same number of timesteps. Please call equalize_lengths before calling forward.");
+    }
+}
+
+
+SignalList Network::forward(const SignalList& input) {
+    check_forward_argument(input);
+
+    // Do the actual forward pass
+    const uint32_t T = input.cdata().begin()->length();
+
+    SignalList output(this->n_output, T);
+
+    for (uint32_t t = 0; t < T; t++) {
+
+    }
+
+    return SignalList();
 }
 
 // This is also very slow. Of 8 seconds,
