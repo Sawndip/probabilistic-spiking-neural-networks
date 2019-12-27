@@ -102,7 +102,7 @@ int test(int argc, char** argv) {
         Network net = Network(n_input, n_hidden, n_output, 
                               ng_funcs[ng_func_i], wei_funcs[w_func_i]);
 
-        std::cout << net;
+        // std::cout << net;
     } catch (std::invalid_argument&) {
         if (expect_crash)
             return 0;

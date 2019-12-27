@@ -98,7 +98,6 @@ void Network::init_neuron_list() {
 
     this->neurons = NeuronList(n_total_neurons);
 
-    // TODO: Will parallelizing this yield any benefits?
     for (NeuronId i = 0; i < n_total_neurons; i++) {
         NeuronType type;
 
@@ -116,15 +115,11 @@ void Network::init_neuron_list() {
     }
 }
 
-// FIXME: This function runs slowest when network_gen_func is fully connected.
-// Find a way to specialize for that case by avoiding the slow quadratic loop and useless function invoc.
-// Here it would be perhaps helpful to use std::variant<UnitType, NetworkGeneratorFunction> as input?
 void Network::init_connections(NetworkGeneratorFunction network_gen_func) {    
     const uint32_t n_neurons_total = this->neurons.size();
 
     this->synapses = SynapseList(n_neurons_total * n_neurons_total);
 
-    // TODO: Make this algorithm run in parallel
     for(Neuron& n1: this->neurons) {
         for (Neuron& n2: this->neurons) {
             if(network_gen_func(n1, n2)) {
@@ -134,7 +129,6 @@ void Network::init_connections(NetworkGeneratorFunction network_gen_func) {
                 this->synapses[idx].from   = n1.id;
                 this->synapses[idx].to     = n2.id;
 
-                // TODO: Measure how slow is this.
                 n1.successor_neurons.push_back(n2.id);
                 n2.predecessor_neurons.push_back(n1.id);
             }
@@ -145,6 +139,11 @@ void Network::init_connections(NetworkGeneratorFunction network_gen_func) {
         throw std::logic_error("There are 0 synapses after the construction procedure");
 }
 
+// In the worst case scenario of fully connected with glorot
+// this method slows down when caling std::normal_distribution::operator()
+// One solution is to develop a special backend thread which will generate standard normals
+// The glorot calls can then read from that thread and scale by 2 / (fan_in + fan_out)
+// This way the stream of random numbers is already generated before init_weights is called.
 void Network::init_weights(WeightInitializerFunction weight_init_func) {
     const uint32_t n_neurons_total = this->neurons.size();
 
@@ -179,6 +178,8 @@ Network::Network(uint32_t n_input,
     this->init_weights(weight_init_func);
 }
 
+// This is also very slow. Of 8 seconds,
+// 6 were needed for the printing of the huge 360000 synapse network
 ostream& operator<<(ostream& out, const Network& net) {
     out << "NETWORK STATISTICS - NEURONS" << endl;
 

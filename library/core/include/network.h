@@ -156,11 +156,13 @@ WeightInitializerFunction glorot_weights(std::default_random_engine generator);
  * TODO: Write docs on the two training methods once they are coded.
  * 
  * The neurons are stored in list in order of INPUT, HIDDEN, OUTPUT
- * The synapses are stored in a map keyed by the pair presynaptic, postsynaptic NeuronId
+ * The synapses are stored in a list keyed by 
+ *  presynaptic * n_total_neurons + postsynaptic NeuronId
  * Neither of these are exposed to the public, i.e they are both private.
  * 
  * The public methods are the class constructor, the forward method and the two training methods
  * for a single sample (single SignalList)
+ * In addition public are utility methods like <<, save_weights, load_weights etc
  */ 
 class Network {
     private:
