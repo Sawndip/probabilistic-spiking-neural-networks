@@ -61,3 +61,11 @@ make_test(
     "NO_REGEX"
     1 1 1 3 3 1
 )
+
+### FORWARD TESTS ###
+
+make_test(
+    test_network_forward
+    "NO_REGEX"
+    1 2 3
+)

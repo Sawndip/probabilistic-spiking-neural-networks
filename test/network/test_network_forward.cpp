@@ -26,4 +26,6 @@ int main(int argc, char** argv) {
         debug_run();
         return 0;
     }
+
+    return 0;
 }
