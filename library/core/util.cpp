@@ -59,6 +59,7 @@ exponentially_decaying_feedback_kernel(
     return kernel;
 }
 
+// TODO: This function is not used. Please remove.
 double convolve(const std::vector<double>& kernel,
                 const signal_t& signal, 
                 const std::uint32_t t) {

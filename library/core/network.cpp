@@ -222,19 +222,74 @@ void Network::check_forward_argument(const SignalList& input) {
 }
 
 
-SignalList Network::forward(const SignalList& input) {
+SignalList Network::forward(const SignalList& input, 
+                            std::default_random_engine& generator) {
     check_forward_argument(input);
 
     // Do the actual forward pass
     const uint32_t T = input.cdata().begin()->length();
+    const uint32_t N = this->neurons.size();
 
+    std::uniform_real_distribution<double> uniform_dist;
+
+    // Operation matrix. T time steps and N neurons.
+    // One column is one time step.
+    // One row is one neuron.
+    // The membrane potentials are stored in this matrix
+    // As well as the probabilistically produced spikes after the membrane potential.
+    std::vector<std::vector<double>> matrix;
+    matrix.reserve(T);
+    std::for_each(matrix.begin(), matrix.end(), [N](auto& v) { v.reserve(N); });
+
+    // For all time steps
+    for (uint32_t t = 0; t < T; t++) {
+        // First load all inputs
+        for (NeuronId i = 0; i < this->n_input; i++)
+            matrix[t][i] = input.cdata()[i].cdata()[t];
+        
+        // Now go over all neurons and do the feedforward
+        for (NeuronId i = 0; i < N; i++) {
+            // Sum the filtered signals of all predecessor neurons
+            for (const NeuronId& pred: this->neurons[i].predecessor_neurons) {
+                // Find the synapse for this predecessor neuron
+                const uint32_t syn_id = i * N + pred;
+                const Synapse& syn    = this->synapses[syn_id];
+
+                const uint32_t K = syn.kernel.size();
+
+                // Calculate the convolution of the past activations with kernel
+                double p = 0.0;
+                for (uint32_t t_prim = 0; t_prim < K && t - t_prim >= 0; t_prim++) {
+                    bool act        = matrix[t - t_prim][i] > 0 ? true : false;
+                    double kern_val = syn.kernel[t_prim];
+
+                    p += act * kern_val;
+                }
+
+                // Add the weighted contribution found via convolution
+                matrix[t][i] += syn.weight * p;
+            }
+            
+            // Calculate the membrane potential and probabilistically emit a spike
+            double membrane_potential = sigmoid(matrix[t][i]);
+            double u = uniform_dist(generator);
+            
+            matrix[t][i] = membrane_potential <= u ? 1 : 0;
+        }
+    }
+
+    // Construct the signal list from the matrix
+    // The output of this function
     SignalList output(this->n_output, T);
 
     for (uint32_t t = 0; t < T; t++) {
-
+        for (NeuronId i = this->neurons.size() - this->n_output; i < this->neurons.size(); i++) {
+            NeuronId j = i - this->n_hidden - this->n_input;
+            output.data()[j].data()[t] = matrix[t][i] > 0 ? true : false;
+        }
     }
 
-    return SignalList();
+    return output;
 }
 
 // This is also very slow. Of 8 seconds,

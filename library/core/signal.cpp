@@ -17,6 +17,10 @@ signal_t& Signal::data() {
     return this->signal;
 }
 
+const signal_t& Signal::cdata() const {
+    return this->signal;
+}
+
 const uint32_t Signal::length() const {
     return this->signal.size();
 }

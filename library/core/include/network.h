@@ -213,7 +213,8 @@ class Network {
          * 
          * 
          */
-        SignalList forward(const SignalList& input);
+        SignalList forward(const SignalList& input,
+                           std::default_random_engine& generator);
 
         friend ostream& operator<<(ostream&, const Network&);
 };

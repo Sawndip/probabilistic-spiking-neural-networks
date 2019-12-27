@@ -23,6 +23,8 @@ class Signal {
          */
         signal_t& data();
 
+        const signal_t& cdata() const;
+
         /*!
          * \brief The number of time steps this signal lasts
          */
