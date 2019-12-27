@@ -110,9 +110,9 @@ void Network::init_neuron_list() {
             type = NeuronType::OUTPUT;
         }
         
-        this->neurons[i] = {
-            type, i, 0.0
-        };
+        this->neurons[i].type = type;
+        this->neurons[i].id   = i;
+        this->neurons[i].bias = 0.0;
     }
 }
 
@@ -128,15 +128,11 @@ void Network::init_connections(NetworkGeneratorFunction network_gen_func) {
     for(Neuron& n1: this->neurons) {
         for (Neuron& n2: this->neurons) {
             if(network_gen_func(n1, n2)) {
-                Synapse s = {
-                    0.0,
-                    n1.id,
-                    n2.id
-                };
-
                 uint32_t idx = n1.id * n_neurons_total + n2.id;
 
-                this->synapses[idx] = s;
+                this->synapses[idx].weight = 0.0;
+                this->synapses[idx].from   = n1.id;
+                this->synapses[idx].to     = n2.id;
 
                 // TODO: Measure how slow is this.
                 n1.successor_neurons.push_back(n2.id);
