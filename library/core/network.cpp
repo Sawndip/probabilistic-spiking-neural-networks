@@ -151,14 +151,30 @@ void Network::init_connections(NetworkGeneratorFunction network_gen_func,
                 this->synapses[idx].weight = 0.0;
                 this->synapses[idx].from   = n1.id;
                 this->synapses[idx].to     = n2.id;
-                this->synapses[idx].kernel = kernel_init_func(n1, n2);
+
+                // Assign kernel
+                std::vector<double> kernel = kernel_init_func(n1, n2);
+                // Check if the kernel is good (contains no NaNs)
+                // Raise an exception if it is not good
+                bool has_nans = std::any_of(kernel.cbegin(), 
+                                            kernel.cend(), 
+                                            [](auto& v) { return !std::isfinite(v); });
+                if (has_nans) {
+                    throw std::invalid_argument("The kernel for a synapse must be composed of finite values.");
+                }
+                // Copy
+                this->synapses[idx].kernel = kernel;
 
                 n1.successor_neurons.push_back(n2.id);
                 n2.predecessor_neurons.push_back(n1.id);
             } else {
+                // These are the unused synapses. Values initialized to impossible.
                 this->synapses[idx].from   = this->neurons.size() + 1e9;
                 this->synapses[idx].to     = this->neurons.size() + 1e9;
                 this->synapses[idx].weight = std::nan("");
+                this->synapses[idx].kernel.assign(
+                    this->synapses[idx].kernel.size(), 
+                    std::nan(""));
             }
         }
     }
@@ -271,7 +287,9 @@ SignalList Network::forward(const SignalList& input,
     // after the membrane potential is sigmoided.
     std::vector<std::vector<double>> matrix;
     matrix.resize(T);
-    std::for_each(matrix.begin(), matrix.end(), [N](auto& v) { v.resize(N, 0.0); });
+    for(auto& v: matrix) {
+        v.resize(N, 0.0);
+    }
 
     // For all time steps
     for (uint32_t t = 0; t < T; t++) {
@@ -283,6 +301,7 @@ SignalList Network::forward(const SignalList& input,
         // Go over all neurons and do the feedforward
         for (NeuronId i = 0; i < N; i++) {
             // Sum the filtered signals of all predecessor neurons
+            // including possible loops
             for (const NeuronId& pred: this->neurons[i].predecessor_neurons) {
                 // Find the synapse for this predecessor neuron
                 const uint32_t syn_id = pred * N + i;
@@ -300,7 +319,8 @@ SignalList Network::forward(const SignalList& input,
             // Calculate the membrane potential of neuron i for time step t
             // by sigmoiding the weighted-sum of filtered traces
             // and probabilistically emit a spike
-            double membrane_potential = sigmoid(matrix[t][i]);
+            double weighted_sum = matrix[t][i];
+            double membrane_potential = sigmoid(weighted_sum);
             double u = uniform_dist(generator);
             matrix[t][i] = membrane_potential >= u ? 1 : 0;
         }
