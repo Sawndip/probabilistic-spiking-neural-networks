@@ -63,9 +63,32 @@ make_test(
 )
 
 ### FORWARD TESTS ###
+# The test suite has hardcoded two input neurons
+# with two static signals
 
-make_test(
-    test_network_forward
-    "NO_REGEX"
-    1 2 3
-)
+# Here is a basic test suite that all types of network constructions
+# do not crash when called on the forward method
+foreach(init_func RANGE 3)
+    foreach (wei_func RANGE 2)
+        # Last 0 means we expect no crash
+        make_test(
+            test_network_forward
+            "NO_REGEX"
+            2 3 1 ${init_func} ${wei_func} 0
+        )
+    endforeach()
+endforeach()
+
+# Same test on a much higher number of hidden and output neurons to check it works as well.
+# And does not slow to a crawl...
+foreach(init_func RANGE 3)
+    foreach (wei_func RANGE 2)
+        # Last 0 means we expect no crash
+        make_test(
+            test_network_forward
+            "NO_REGEX"
+            2 300 100 ${init_func} ${wei_func} 0
+        )
+    endforeach()
+endforeach()
+
