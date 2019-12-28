@@ -9,7 +9,7 @@ Signal::Signal() : signal({0}) {
 }
 
 Signal::Signal(const std::uint32_t time_steps) {
-    signal.reserve(time_steps);
+    signal.resize(time_steps);
     signal.assign(time_steps, false);
 }
 
@@ -65,7 +65,7 @@ SignalList::SignalList(const std::uint32_t n_signals) {
 
 SignalList::SignalList(const std::uint32_t n_signals, 
                        const std::uint32_t time_steps) {
-    signals.reserve(n_signals);
+    signals.resize(n_signals);
     for (int i = 0; i < n_signals; i++) {
         signals[i] = Signal(time_steps);
     }

@@ -9,8 +9,8 @@ void debug_run() {
     Network net(2, 3, 1, perceptron_init_hidden(), glorot_weights(generator));
 
     SignalList test_signals;
-    Signal s1 = Signal::from_string("^^__^^");
-    Signal s2 = Signal::from_string("__^^__");
+    Signal s1 = Signal::from_string("^^__^^__");
+    Signal s2 = Signal::from_string("__^^__^^");
     test_signals.add(s1);
     test_signals.add(s2);
     test_signals.equalize_lengths();

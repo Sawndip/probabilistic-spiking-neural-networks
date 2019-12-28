@@ -145,9 +145,9 @@ void Network::init_connections(NetworkGeneratorFunction network_gen_func,
 
     for(Neuron& n1: this->neurons) {
         for (Neuron& n2: this->neurons) {
-            if(network_gen_func(n1, n2)) {
-                uint32_t idx = n1.id * n_neurons_total + n2.id;
+            uint32_t idx = n1.id * n_neurons_total + n2.id;
 
+            if(network_gen_func(n1, n2)) {
                 this->synapses[idx].weight = 0.0;
                 this->synapses[idx].from   = n1.id;
                 this->synapses[idx].to     = n2.id;
@@ -155,6 +155,10 @@ void Network::init_connections(NetworkGeneratorFunction network_gen_func,
 
                 n1.successor_neurons.push_back(n2.id);
                 n2.predecessor_neurons.push_back(n1.id);
+            } else {
+                this->synapses[idx].from   = this->neurons.size() + 1e9;
+                this->synapses[idx].to     = this->neurons.size() + 1e9;
+                this->synapses[idx].weight = std::nan("");
             }
         }
     }
@@ -210,13 +214,20 @@ void Network::check_forward_argument(const SignalList& input) {
     }
 
     // Check if the input signals are of equal length
-    std::vector<uint32_t> sizes;
+    // Here we use the difference of the sequence T1 T2 T3 ...
+    // where Ti is the number of time steps of the i-th signal
+    // If T1 = T2 = T3 then the differences will be 0
+    // And the sum of differences will be 0 as well
+    std::vector<uint32_t> sizes(input.cdata().size());
     std::transform(input.cdata().cbegin(), input.cdata().cend(), sizes.begin(),
     [](const Signal& s) -> uint32_t { return s.length(); });
 
-    std::vector<uint32_t> diff;
+    std::vector<uint32_t> diff(sizes.size());
     std::adjacent_difference(sizes.begin(), sizes.end(), diff.begin());
-    if (std::accumulate(diff.begin(), diff.end(), 0) != 0) {
+    // Due to how adjacent_difference is implemented we must drop the first element.
+    diff.erase(diff.begin());
+    double total_diff = std::accumulate(diff.begin(), diff.end(), 0);
+    if (total_diff != 0) {
         throw std::invalid_argument("All input signals must have the same number of timesteps. Please call equalize_lengths before calling forward.");
     }
 }
@@ -236,45 +247,49 @@ SignalList Network::forward(const SignalList& input,
     // One column is one time step.
     // One row is one neuron.
     // The membrane potentials are stored in this matrix
-    // As well as the probabilistically produced spikes after the membrane potential.
+    // As well as the probabilistically produced spikes
+    // after the membrane potential is sigmoided.
     std::vector<std::vector<double>> matrix;
-    matrix.reserve(T);
-    std::for_each(matrix.begin(), matrix.end(), [N](auto& v) { v.reserve(N); });
+    matrix.resize(T);
+    std::for_each(matrix.begin(), matrix.end(), [N](auto& v) { v.resize(N, 0.0); });
 
     // For all time steps
     for (uint32_t t = 0; t < T; t++) {
         // First load all inputs
-        for (NeuronId i = 0; i < this->n_input; i++)
+        for (NeuronId i = 0; i < this->n_input; i++) {
             matrix[t][i] = input.cdata()[i].cdata()[t];
+        }
         
-        // Now go over all neurons and do the feedforward
+        // Go over all neurons and do the feedforward
         for (NeuronId i = 0; i < N; i++) {
             // Sum the filtered signals of all predecessor neurons
             for (const NeuronId& pred: this->neurons[i].predecessor_neurons) {
                 // Find the synapse for this predecessor neuron
-                const uint32_t syn_id = i * N + pred;
+                const uint32_t syn_id = pred * N + i;
                 const Synapse& syn    = this->synapses[syn_id];
 
+                // Calculate the convolution of 
+                // the past activations of predecessor
+                // with kernel stored in the synapse
                 const uint32_t K = syn.kernel.size();
+                double filtered_trace = 0.0;
+                for (uint32_t lag = 0; (lag < K) && (t >= lag); lag++) {
+                    bool spiked     = matrix[t - lag][pred] > 0 ? true : false;
+                    double kern_val = syn.kernel[lag];
 
-                // Calculate the convolution of the past activations with kernel
-                double p = 0.0;
-                for (uint32_t t_prim = 0; t_prim < K && t - t_prim >= 0; t_prim++) {
-                    bool act        = matrix[t - t_prim][i] > 0 ? true : false;
-                    double kern_val = syn.kernel[t_prim];
-
-                    p += act * kern_val;
+                    filtered_trace += spiked * kern_val;
                 }
 
                 // Add the weighted contribution found via convolution
-                matrix[t][i] += syn.weight * p;
+                matrix[t][i] += syn.weight * filtered_trace;
             }
             
-            // Calculate the membrane potential and probabilistically emit a spike
+            // Calculate the membrane potential 
+            // by sigmoiding the weighted-sum of filtered traces
+            // and probabilistically emit a spike
             double membrane_potential = sigmoid(matrix[t][i]);
             double u = uniform_dist(generator);
-            
-            matrix[t][i] = membrane_potential <= u ? 1 : 0;
+            matrix[t][i] = membrane_potential >= u ? 1 : 0;
         }
     }
 
@@ -283,7 +298,10 @@ SignalList Network::forward(const SignalList& input,
     SignalList output(this->n_output, T);
 
     for (uint32_t t = 0; t < T; t++) {
-        for (NeuronId i = this->neurons.size() - this->n_output; i < this->neurons.size(); i++) {
+        for (NeuronId i = this->neurons.size() - this->n_output; 
+            i < this->neurons.size(); 
+            i++) 
+        {
             NeuronId j = i - this->n_hidden - this->n_input;
             output.data()[j].data()[t] = matrix[t][i] > 0 ? true : false;
         }
