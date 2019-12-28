@@ -17,7 +17,6 @@ set (test_dirs
     merge
     sigmoid
     kernels
-    convolve
     network)
 
 foreach(td ${test_dirs})

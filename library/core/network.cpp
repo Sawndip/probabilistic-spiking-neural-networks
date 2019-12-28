@@ -232,6 +232,26 @@ void Network::check_forward_argument(const SignalList& input) {
     }
 }
 
+/*!
+ * Perform a convolution of previous activations signal with synapse kernel.
+ * The parameter t is the current time step in the simulation
+ * while pred is the id of the predecessor neuron
+ * The parameter matrix is the operation matrix of T rows and N columns.
+ */ 
+double __convolve(const Synapse& syn,
+                  const std::vector<std::vector<double>>& matrix,
+                  const uint32_t t,
+                  const uint32_t pred) {
+    const uint32_t K = syn.kernel.size();
+    double filtered_trace = 0.0;
+    for (uint32_t lag = 0; (lag < K) && (t >= lag); lag++) {
+        bool spiked     = matrix[t - lag][pred] > 0 ? true : false;
+        double kern_val = syn.kernel[lag];
+
+        filtered_trace += spiked * kern_val;
+    }
+    return filtered_trace;
+}
 
 SignalList Network::forward(const SignalList& input, 
                             std::default_random_engine& generator) {
@@ -271,20 +291,13 @@ SignalList Network::forward(const SignalList& input,
                 // Calculate the convolution of 
                 // the past activations of predecessor
                 // with kernel stored in the synapse
-                const uint32_t K = syn.kernel.size();
-                double filtered_trace = 0.0;
-                for (uint32_t lag = 0; (lag < K) && (t >= lag); lag++) {
-                    bool spiked     = matrix[t - lag][pred] > 0 ? true : false;
-                    double kern_val = syn.kernel[lag];
-
-                    filtered_trace += spiked * kern_val;
-                }
+                double filtered_trace = __convolve(syn, matrix, t, pred);
 
                 // Add the weighted contribution found via convolution
                 matrix[t][i] += syn.weight * filtered_trace;
             }
             
-            // Calculate the membrane potential 
+            // Calculate the membrane potential of neuron i for time step t
             // by sigmoiding the weighted-sum of filtered traces
             // and probabilistically emit a spike
             double membrane_potential = sigmoid(matrix[t][i]);
