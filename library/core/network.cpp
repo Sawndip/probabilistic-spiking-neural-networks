@@ -298,7 +298,7 @@ SignalList Network::forward(const SignalList& input,
             matrix[t][i] = input.cdata()[i].cdata()[t];
         }
         
-        // Go over all neurons and do the feedforward
+        // Go over all neurons and do the feedforward/feedback
         for (NeuronId i = 0; i < N; i++) {
             // Sum the filtered signals of all predecessor neurons
             // including possible loops
@@ -315,6 +315,9 @@ SignalList Network::forward(const SignalList& input,
                 // Add the weighted contribution found via convolution
                 matrix[t][i] += syn.weight * filtered_trace;
             }
+
+            // Add bias of neuron i into the final calculation
+            matrix[t][i] += this->neurons[i].bias;
             
             // Calculate the membrane potential of neuron i for time step t
             // by sigmoiding the weighted-sum of filtered traces
