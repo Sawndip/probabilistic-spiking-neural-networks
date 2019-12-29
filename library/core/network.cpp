@@ -355,6 +355,8 @@ SignalList Network::forward(const SignalList& input,
 
 ////////////////////////////////////////////////////////////////////////
 // Online SGD training forward pass for one time step. /////////////////
+// TODO: Wrap all the vectors and matrices into a struct so the 
+// number of parameters to these two functions will be more manageable.
 void Network::__train_forward_pass_step(
     const SignalList& example_input,
     const SignalList& wanted_output,
@@ -363,8 +365,8 @@ void Network::__train_forward_pass_step(
     DoubleMatrix& saved_filtered_traces,
     DoubleMatrix& saved_membrane_potential_matrix,
 
-    const uint32_t N, const uint32_t t) {
- 
+    const uint32_t N, const uint32_t t
+) { 
     // First load all inputs
     for (NeuronId i = 0; i < this->n_input; i++) {
         membrane_potential_matrix[t][i] = example_input.cdata()[i].cdata()[t];
@@ -412,7 +414,8 @@ void Network::__train_forward_pass_step(
         if (this->neurons[i].type == NeuronType::INPUT) {
             membrane_potential_matrix[t][i] = example_input.cdata()[i].cdata()[t];
         } else {
-            membrane_potential_matrix[t][i] = wanted_output.cdata()[i].cdata()[t];
+            std::uint32_t j = i - this->n_input;
+            membrane_potential_matrix[t][i] = wanted_output.cdata()[j].cdata()[t];
         }
     }
 }
@@ -470,7 +473,7 @@ void Network::__train_backward_pass_step(
             double gradient_synapse_smoothed;
 
             const uint32_t syn_id = pred * N + i;
-            Synapse& syn    = this->synapses[syn_id];         
+            Synapse& syn          = this->synapses[syn_id];         
 
             // Calculate smoothed version
             // It is not NaN when t > 0
@@ -489,6 +492,15 @@ void Network::__train_backward_pass_step(
     }
 }
 
+// TODO: Consider moving the training to a new file and class
+// This file is getting too big.
+// This function implements Algorithm (1) from the paper.
+// TODO: Find a way to monitor the weights and changes and to notify so
+// the end user will know when to stop training.
+// Easiest way would be two matrices, one for gradient history of shape T x N
+// One for synapse weight history of shape T x (N x N)
+// Then how would one make a decision to stop training? 
+// Frobenius norm of these two being small, less then some epsilon?
 void Network::train_fully_observed_online(
     const SignalList& example_input,
     const SignalList& wanted_output,
@@ -499,6 +511,7 @@ void Network::train_fully_observed_online(
     // TODO: Check that ground truth output is good as well.
     // Has correct number of signals and all of same length as input signals.
     // Also check that the neural network has 0 hidden neurons.
+    // Raise exceptions if any problem occurs.
     check_forward_argument(example_input);
 
     const uint32_t T = example_input.cdata().begin()->length();
@@ -539,7 +552,8 @@ void Network::train_fully_observed_online(
                 membrane_potential_matrix,
                 saved_filtered_traces,
                 saved_membrane_potential_matrix,
-                N, t);
+                N, t
+            );
 
             // Forward pass finished for this time step. Calculate the gradients
             // and ellegibility traces and perform in place update.

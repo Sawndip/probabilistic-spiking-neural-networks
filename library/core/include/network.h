@@ -187,6 +187,8 @@ class Network {
         uint32_t n_hidden;
         uint32_t n_output;
 
+        // TODO: Decide on a consistent naming convention
+        // for the private function names.
         void init_neuron_list();
         void init_connections(NetworkGeneratorFunction synapse_gen_func, 
                               KernelInitializerFunction kernel_init_func);
@@ -204,6 +206,7 @@ class Network {
                 DoubleMatrix& saved_membrane_potential_matrix,
 
                 const uint32_t N, const uint32_t t);
+
         void __train_backward_pass_step(
             DoubleMatrix& saved_membrane_potential_matrix,
             DoubleMatrix& membrane_potential_matrix,
@@ -238,15 +241,30 @@ class Network {
         /*!
          * Before calling this function ensure equalize length is called
          * 
-         * 
+         * \param SignalList& input - One signal for each input neuron.
+         * \param std::default_ranom_engine& generator - The generator from which
+         * the algorithm will sample uniformly distributed numbers.
          */
         SignalList forward(const SignalList& input,
                            std::default_random_engine& generator);
 
         /*!
-         *
+         * Trains the SNN, with 0 hidden neurons, to generate output signals
+         * for input signals. The training is for one data-point.
+         * The training happens in an online fashion, i.e. the weights are updated
+         * while the network is still doing forward propagation for the later time steps.
          * 
+         * \param SignalList& example_input - The input
+         * \param SignalList& wanted_output - The wanted output
+         * \param double et_factor = 0.5 - The elegibillity trace scaling factor.
+         * Larger values will lead to more weight given to previous time gradients
+         * \param double learning_rate = 0.01 - The learning rate for the SGD
+         * \param const uint32_t n_iterations = 1 - How many times to loop over the 
+         * same input. This would be best left 1.
          * 
+         * TODO: Decide on how to interface with rest of the world on training progress.
+         * Functions are more general, but two matrices for gradient history will do the
+         * trick as well.
          */ 
         void train_fully_observed_online(
             const SignalList& example_input,

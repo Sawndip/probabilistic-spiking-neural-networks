@@ -92,3 +92,9 @@ foreach(init_func RANGE 3)
     endforeach()
 endforeach()
 
+### FULLY OBSERVED TRAINING TESTS ###
+make_test(
+    test_fully_observed_train
+    "NO_REGEX"
+    0 0 0
+)
