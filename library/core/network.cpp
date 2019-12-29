@@ -248,6 +248,14 @@ void Network::check_forward_argument(const SignalList& input) {
     }
 }
 
+void __init_matrix(std::vector<std::vector<double>>& matrix, 
+                   const uint32_t T, const uint32_t N) {
+    matrix.resize(T);
+    for(auto& v: matrix) {
+        v.resize(N, 0.0);
+    }
+}
+
 /*!
  * Perform a convolution of previous activations signal with synapse kernel.
  * The parameter t is the current time step in the simulation
@@ -286,10 +294,8 @@ SignalList Network::forward(const SignalList& input,
     // As well as the probabilistically produced spikes
     // after the membrane potential is sigmoided.
     std::vector<std::vector<double>> matrix;
-    matrix.resize(T);
-    for(auto& v: matrix) {
-        v.resize(N, 0.0);
-    }
+
+    __init_matrix(matrix, T, N);
 
     // For all time steps
     for (uint32_t t = 0; t < T; t++) {
@@ -344,6 +350,209 @@ SignalList Network::forward(const SignalList& input,
     }
 
     return output;
+}
+
+
+////////////////////////////////////////////////////////////////////////
+// Online SGD training forward pass for one time step. /////////////////
+void Network::__train_forward_pass_step(
+    const SignalList& example_input,
+    const SignalList& wanted_output,
+
+    DoubleMatrix& membrane_potential_matrix,
+    DoubleMatrix& saved_filtered_traces,
+    DoubleMatrix& saved_membrane_potential_matrix,
+
+    const uint32_t N, const uint32_t t) {
+ 
+    // First load all inputs
+    for (NeuronId i = 0; i < this->n_input; i++) {
+        membrane_potential_matrix[t][i] = example_input.cdata()[i].cdata()[t];
+    }
+    
+    // Reset the saved filtered traces matrix for a new timestep
+    __init_matrix(saved_filtered_traces, N, N);
+
+    // Go over all neurons and do the feedforward/feedback
+    for (NeuronId i = 0; i < N; i++) {
+        // Sum the filtered signals of all predecessor neurons
+        // including possible loops
+        for (const NeuronId& pred: this->neurons[i].predecessor_neurons) {
+            // Find the synapse for this predecessor neuron
+            const uint32_t syn_id = pred * N + i;
+            const Synapse& syn    = this->synapses[syn_id];
+
+            // Calculate the convolution of 
+            // the past activations of predecessor
+            // with kernel stored in the synapse
+            double filtered_trace = __convolve(syn, membrane_potential_matrix, t, pred);
+
+            // Add the weighted contribution found via convolution
+            membrane_potential_matrix[t][i] += syn.weight * filtered_trace;
+
+            // Save the filtered trace so we can build the gradient from it later
+            saved_filtered_traces[pred][i] = filtered_trace;
+        }
+
+        // Add bias of neuron i into the final calculation
+        membrane_potential_matrix[t][i] += this->neurons[i].bias;
+        
+        // Calculate the membrane potential of neuron i for time step t
+        // by sigmoiding the weighted-sum of filtered traces
+        // and probabilistically emit a spike which is stored
+        // in the same membrane potential matrix
+        double weighted_sum = membrane_potential_matrix[t][i];
+        double membrane_potential = sigmoid(weighted_sum);
+        
+        // As we also need the raw membrane potentials for the gradients
+        // We must save them as well.
+        saved_membrane_potential_matrix[t][i] = membrane_potential;
+
+        // Set the operating matrix to predetermined ground truth values
+        if (this->neurons[i].type == NeuronType::INPUT) {
+            membrane_potential_matrix[t][i] = example_input.cdata()[i].cdata()[t];
+        } else {
+            membrane_potential_matrix[t][i] = wanted_output.cdata()[i].cdata()[t];
+        }
+    }
+}
+
+void Network::__train_backward_pass_step(
+    DoubleMatrix& saved_membrane_potential_matrix,
+    DoubleMatrix& membrane_potential_matrix,
+    DoubleMatrix& saved_filtered_traces,
+
+    std::vector<double>& bias_trace,
+    std::vector<double>& synapse_trace,
+
+    const double et_factor,
+    const double learning_rate,
+
+    const uint32_t N, 
+    const uint32_t t
+) {
+    // Terminology from paper and variable names corespondence.
+    // s[i, t] = membrane_potential_matrix[t, i] = also x[i, t] 
+    // (example_input or wanted_output dependening on i)
+    // sigmoid(u[i, t]) = saved_membrane_potential_matrix[t, i]
+    // \vec{s[j, i, t-1]} = saved_filtered_traces[j, i]
+    for (NeuronId i = 0; i < N; i++) {
+        double membrane_potential = saved_membrane_potential_matrix[t][i];
+        double spiked             = membrane_potential_matrix[t][i];
+        
+        // Gradient for the bias term and the
+        // time-smoothed version for lowering variance
+        double gradient_bias = spiked - membrane_potential;
+        double gradient_bias_smoothed;
+
+        // It is not NaN when t > 0
+        if (!std::isnan(bias_trace[i])) {
+            gradient_bias_smoothed = et_factor * bias_trace[i] + 
+                (1 - et_factor) * (gradient_bias);
+            bias_trace[i] = gradient_bias_smoothed;
+        } else {
+            bias_trace[i] = gradient_bias;
+            gradient_bias_smoothed = gradient_bias;
+        }
+
+        // Update the bias
+        this->neurons[i].bias += learning_rate * gradient_bias_smoothed;
+
+        // Gradient for the synapse weights and updates.
+        // Note: That we do not treat w[i] as a special case but instead
+        // use w[i, i]
+        for (const NeuronId& pred: this->neurons[i].predecessor_neurons) {
+            // The gradient is the weighted difference between the probability of spiking
+            // and whether it spiked or not.
+            double sft = saved_filtered_traces[pred][i];
+            double gradient_synapse = sft * (spiked - membrane_potential);
+
+            double gradient_synapse_smoothed;
+
+            const uint32_t syn_id = pred * N + i;
+            Synapse& syn    = this->synapses[syn_id];         
+
+            // Calculate smoothed version
+            // It is not NaN when t > 0
+            if (!std::isnan(synapse_trace[syn_id])) {
+                synapse_trace[syn_id] = et_factor * synapse_trace[syn_id] +
+                    (1 - et_factor) * (gradient_synapse);
+                gradient_synapse_smoothed = synapse_trace[syn_id];
+            } else {
+                synapse_trace[syn_id] = gradient_synapse;
+                gradient_synapse_smoothed = gradient_synapse;
+            }
+
+            // Update
+            syn.weight += learning_rate * gradient_synapse_smoothed;
+        }
+    }
+}
+
+void Network::train_fully_observed_online(
+    const SignalList& example_input,
+    const SignalList& wanted_output,
+    const double et_factor,
+    const double learning_rate,
+    const uint32_t n_iterations) {
+    
+    // TODO: Check that ground truth output is good as well.
+    // Has correct number of signals and all of same length as input signals.
+    // Also check that the neural network has 0 hidden neurons.
+    check_forward_argument(example_input);
+
+    const uint32_t T = example_input.cdata().begin()->length();
+    const uint32_t N = this->neurons.size();
+
+    DoubleMatrix membrane_potential_matrix;
+    DoubleMatrix saved_membrane_potential_matrix;
+    DoubleMatrix saved_filtered_traces;
+
+    __init_matrix(membrane_potential_matrix, T, N);
+    __init_matrix(saved_membrane_potential_matrix, T, N);
+
+    // ellegibility traces (averaged gradients over time)
+    // At time 0 we must use only the gradient.
+    // Instead of checking for time we check for NaNs
+    // which is why these arrays are NaN initialized.
+    std::vector<double> bias_trace;
+    bias_trace.resize(N, std::nan(""));
+    std::vector<double> synapse_trace;
+    synapse_trace.resize(this->synapses.size(), std::nan(""));
+
+    // For all epochs
+    for (uint32_t epoch = 0; epoch < n_iterations; epoch++) {
+        // For all time steps
+        for (uint32_t t = 0; t < T; t++) {
+            // Perform forward pass so we can find the calculated membrane potentials
+            // (stored in saved_membrane_potential_matrix), the filtered traces for
+            // the current time step and the ground truth values 
+            // (stored in membrane_potential_matrix)
+            // The reason why ground truth values are stored in membrane_potential_matrix
+            // is that we use this matrix for making the forward pass for time t
+            // and we need binary spikes/no-spikes from times t-1, t-2 and so on.
+            // Compare this to feedforward where we sampled from bernoulli
+            // and assigned to the that matrix as well.
+            this->__train_forward_pass_step(
+                example_input,
+                wanted_output,
+                membrane_potential_matrix,
+                saved_filtered_traces,
+                saved_membrane_potential_matrix,
+                N, t);
+
+            // Forward pass finished for this time step. Calculate the gradients
+            // and ellegibility traces and perform in place update.
+            this->__train_backward_pass_step(
+                saved_membrane_potential_matrix,
+                membrane_potential_matrix,
+                saved_filtered_traces,
+                bias_trace, synapse_trace,
+                et_factor, learning_rate,
+                N, t
+            );
+        }
+    }
 }
 
 // This is also very slow. Of 8 seconds,

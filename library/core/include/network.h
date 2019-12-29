@@ -162,6 +162,8 @@ WeightInitializerFunction normal_weights(std::default_random_engine generator,
  */
 WeightInitializerFunction glorot_weights(std::default_random_engine generator);
 
+typedef std::vector<std::vector<double>> DoubleMatrix;
+
 /*!
  * This is a general spiking neural network class for both completely or partialy observed cases.
  * In both cases the forward method is the same while the training procedures differ.
@@ -192,6 +194,31 @@ class Network {
 
         void check_forward_argument(const SignalList& input);
 
+        // Online all visible training
+        void __train_forward_pass_step(
+                const SignalList& example_input,
+                const SignalList& wanted_output,
+
+                DoubleMatrix& membrane_potential_matrix,
+                DoubleMatrix& saved_filtered_traces,
+                DoubleMatrix& saved_membrane_potential_matrix,
+
+                const uint32_t N, const uint32_t t);
+        void __train_backward_pass_step(
+            DoubleMatrix& saved_membrane_potential_matrix,
+            DoubleMatrix& membrane_potential_matrix,
+            DoubleMatrix& saved_filtered_traces,
+
+            std::vector<double>& bias_trace,
+            std::vector<double>& synapse_trace,
+
+            const double et_factor,
+            const double learning_rate,
+
+            const uint32_t N, 
+            const uint32_t t
+        );
+
     public:
         /*!
          * \brief Create the spiking neural network.
@@ -215,6 +242,18 @@ class Network {
          */
         SignalList forward(const SignalList& input,
                            std::default_random_engine& generator);
+
+        /*!
+         *
+         * 
+         * 
+         */ 
+        void train_fully_observed_online(
+            const SignalList& example_input,
+            const SignalList& wanted_output,
+            const double et_factor = 0.5,
+            const double learning_rate = 0.01,
+            const uint32_t n_iterations = 1);
 
         friend ostream& operator<<(ostream&, const Network&);
 };
