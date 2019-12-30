@@ -223,6 +223,22 @@ Network::Network(uint32_t n_input,
     this->init_weights(weight_init_func);
 }
 
+Neuron& Network::neuron(const NeuronId id) {
+    return this->neurons[id];
+}
+
+const Neuron& Network::cneuron(const NeuronId id) const {
+    return this->neurons[id];
+}
+
+Synapse& Network::synapse(const NeuronId j, const NeuronId i) {
+    return this->synapses[j * this->neurons.size() + i];
+}
+
+const Synapse& Network::csynapse(const NeuronId j, const NeuronId i) const {
+    return this->synapses[j * this->neurons.size() + i];
+}
+
 void Network::check_forward_argument(const SignalList& input) {
     // Check if the input signals and the number of input neurons is equal
     if (input.cdata().size() != this->n_input) {

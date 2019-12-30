@@ -8,13 +8,14 @@ void debug_run() {
     std::default_random_engine generator;
     generator.seed(1337);
 
-    Network net = Network(2, 0, 1,
-                          perceptron_init_simple(), 
+    Network net = Network(2, 0, 2,
+                          fully_connected_init(), 
                           glorot_weights(generator));
 
     Signal i1 = Signal::from_string("^^^___");
     Signal i2 = Signal::from_string("___^^^");
     Signal o1 = Signal::from_string("^^^^^^");
+    Signal o2 = Signal::from_string("______");
 
     SignalList inputs;
     inputs.add(i1);
@@ -22,6 +23,7 @@ void debug_run() {
 
     SignalList wanted_outputs;
     wanted_outputs.add(o1);
+    wanted_outputs.add(o2);
 
     std::cout << "Observed result with no training." << std::endl;
     SignalList f0 = net.forward(inputs, generator);

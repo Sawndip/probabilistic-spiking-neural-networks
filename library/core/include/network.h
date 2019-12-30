@@ -169,14 +169,12 @@ typedef std::vector<std::vector<double>> DoubleMatrix;
  * In both cases the forward method is the same while the training procedures differ.
  * TODO: Write docs on the two training methods once they are coded.
  * 
- * The neurons are stored in list in order of INPUT, HIDDEN, OUTPUT
- * The synapses are stored in a list keyed by 
+ * The neurons are stored in vector in order of INPUT, HIDDEN, OUTPUT
+ * The synapses are stored in a vector keyed by 
  *  presynaptic * n_total_neurons + postsynaptic NeuronId
  * Neither of these are exposed to the public, i.e they are both private.
- * 
- * The public methods are the class constructor, the forward method and the two training methods
- * for a single sample (single SignalList)
- * In addition public are utility methods like <<, save_weights, load_weights etc
+ * In both cases the values are stored without use of pointers and without
+ * manual new/delete type of memory management.
  */ 
 class Network {
     private:
@@ -228,15 +226,42 @@ class Network {
          * 
          * The first three parameters are the number of input, hidden and output neurons.
          * The 4th parameter is the network generator function
-         * The final parameter is the weight initializer function
+         * The 5th parameter is the weight initializer function.
+         * The 6th parameter is the synapse kernel initializer function.
          */
         Network(uint32_t n_input, 
                 uint32_t n_hidden,
                 uint32_t n_output,
                 NetworkGeneratorFunction network_gen_func,
                 WeightInitializerFunction weight_init_func,
-                KernelInitializerFunction kernel_func = default_exponential_kernels()
+                KernelInitializerFunction kernel_init_func = default_exponential_kernels()
                );
+
+        /*!
+         * \brief Accessor method for a single Neuron.
+         * Going out of bounds will cause a segmentation fault.
+         */ 
+        Neuron& neuron(const NeuronId id);
+        /*!
+         * \brief Const accessor method for accessing a neuron.
+         * 
+         * \see Network::neuron
+         */ 
+        const Neuron& cneuron(const NeuronId id) const;
+
+        /*!
+         * \brief Accessor method for a synapse starting in neuron j and ending in i.
+         * 
+         * \param NeuronId j - The presynaptic neuron id
+         * \param NeuronId i - The postsynaptic neuron id
+         */ 
+        Synapse& synapse(const NeuronId j, const NeuronId i);
+
+        /*!
+         * \brief Const accessor method for synapses.
+         * \see Network::synapse
+         */ 
+        const Synapse& csynapse(const NeuronId j, const NeuronId i) const;
 
         /*!
          * Before calling this function ensure equalize length is called
