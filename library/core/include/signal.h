@@ -76,6 +76,10 @@ class SignalList {
 
         const signal_list_t& cdata() const;
 
+        const uint32_t number_of_signals() const;
+
+        const uint32_t time_steps() const;
+
         /*!
          * \brief Add a new signal to the end of this list.
          */ 

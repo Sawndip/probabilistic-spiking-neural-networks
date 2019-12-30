@@ -9,7 +9,6 @@
 #include "core/include/types.h"
 #include "core/include/util.h"
 #include "core/include/signal.h"
-#include "core/include/trainer.h"
 
 using namespace std;
 
@@ -104,8 +103,6 @@ class Network {
                               KernelInitializerFunction kernel_init_func);
         void init_weights(WeightInitializerFunction weight_init_func);
 
-        void check_forward_argument(const SignalList& input);
-
         // Online all visible training
         void __train_forward_pass_step(
                 const SignalList& example_input,
@@ -174,6 +171,19 @@ class Network {
          * \see Network::synapse
          */ 
         const Synapse& csynapse(const NeuronId j, const NeuronId i) const;
+
+        /*!
+         * Return the number of neurons in this network.
+         */ 
+        const uint32_t total_neurons() const;
+
+        /*!
+         * Performs two checks
+         * 1. The number of provided signals matches the number of input neurons.
+         * 2. The length of all signals is equal to a single value, i.e. all signals
+         * have the same length.
+         */ 
+        void check_forward_argument(const SignalList& input) const;
 
         /*!
          * Before calling this function ensure equalize length is called

@@ -1,5 +1,6 @@
 #include "core/include/signal.h"
 #include "core/include/network.h"
+#include "core/include/trainer.h"
 
 #include <iostream>
 #include <random>
@@ -24,6 +25,9 @@ void debug_run() {
     SignalList wanted_outputs;
     wanted_outputs.add(o1);
     wanted_outputs.add(o2);
+
+    FullyObservedOnlineTrainer trainer;
+    trainer.train(net, inputs, wanted_outputs, {0.01, 0.5, 100});
 
     std::cout << "Observed result with no training." << std::endl;
     SignalList f0 = net.forward(inputs, generator);

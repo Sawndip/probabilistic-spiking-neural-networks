@@ -239,9 +239,13 @@ const Synapse& Network::csynapse(const NeuronId j, const NeuronId i) const {
     return this->synapses[j * this->neurons.size() + i];
 }
 
-void Network::check_forward_argument(const SignalList& input) {
+const uint32_t Network::total_neurons() const {
+    return this->neurons.size();
+}
+
+void Network::check_forward_argument(const SignalList& input) const {
     // Check if the input signals and the number of input neurons is equal
-    if (input.cdata().size() != this->n_input) {
+    if (input.number_of_signals() != this->n_input) {
         throw std::invalid_argument("The number of input signals must match the number of input neurons");
     }
 

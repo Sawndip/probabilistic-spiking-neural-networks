@@ -79,6 +79,17 @@ const signal_list_t& SignalList::cdata() const {
     return this->signals;
 }
 
+const uint32_t SignalList::number_of_signals() const {
+    return signals.size();
+}
+
+const uint32_t SignalList::time_steps() const {
+    if (signals.size() == 0)
+        return 0;
+
+    return signals[0].length();
+}
+
 void SignalList::add(const Signal& s) {
     this->signals.push_back(s);
 }
