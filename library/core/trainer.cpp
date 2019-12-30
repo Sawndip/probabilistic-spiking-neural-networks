@@ -19,12 +19,25 @@ void FullyObservedOnlineTrainer::check_input_output(
 
     net.check_forward_argument(input);
 
+    if (wanted_output.number_of_signals() != net.total_outputs())
+        throw std::invalid_argument("The ground truth output signals must be same in number as output neurons.");
+
+    if (wanted_output.time_steps() != input.time_steps())
+        throw std::invalid_argument("The input and output signals must be of same duration.");
 }
 
 void FullyObservedOnlineTrainer::check_training_params(
     const TrainingParameters& params
 ) const {
 
+    if (params.learning_rate <= 0 || params.learning_rate >= 1)
+        throw std::invalid_argument("The learning rate must be in range(0, 1]");
+
+    if (params.ellegibility_trace_factor <= 0 || params.ellegibility_trace_factor >= 1)
+        throw std::invalid_argument("The elegibilility trace factor must be in range(0, 1]");
+
+    if (!std::isfinite(params.epochs))
+        throw std::invalid_argument("The number of epochs must be finite.");
 }
 
 void FullyObservedOnlineTrainer::forward_pass_one_time_step(
