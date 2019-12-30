@@ -78,7 +78,7 @@ WeightInitializerFunction glorot_weights(std::default_random_engine generator);
 /*!
  * This is a general spiking neural network class for both completely or partialy observed cases.
  * In both cases the forward method is the same while the training procedures differ.
- * TODO: Write docs on the two training methods once they are coded.
+ * To train \see the class Trainer
  * 
  * The neurons are stored in vector in order of INPUT, HIDDEN, OUTPUT
  * The synapses are stored in a vector keyed by 

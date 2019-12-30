@@ -81,6 +81,48 @@ void FullyObservedOnlineTrainer::forward_pass_one_time_step(
     }
 }
 
+double FullyObservedOnlineTrainer::smoothed_bias_gradient(
+    const NeuronId& i,
+    double gradient,
+    double et_factor) {
+    
+    double gradient_smoothed;
+
+    // It is not NaN when t > 0
+    if (!std::isnan(bias_trace_vector[i])) {
+        gradient_smoothed = et_factor * bias_trace_vector[i] + 
+            (1 - et_factor) * (gradient);
+        bias_trace_vector[i] = gradient_smoothed;
+    } else {
+        bias_trace_vector[i] = gradient;
+        gradient_smoothed = gradient;
+    }
+
+    return gradient_smoothed;
+}
+
+double FullyObservedOnlineTrainer::smoothed_synapse_gradient(
+    const NeuronId& j, const NeuronId& i, const uint32_t N,
+    double gradient, double et_factor) {
+
+    double gradient_smoothed;
+
+    const uint32_t syn_id = j * N + i;
+
+    // Calculate smoothed version
+    // It is not NaN when t > 0
+    if (!std::isnan(synapse_trace_vector[syn_id])) {
+        synapse_trace_vector[syn_id] = et_factor * synapse_trace_vector[syn_id] +
+            (1 - et_factor) * (gradient);
+        gradient_smoothed = synapse_trace_vector[syn_id];
+    } else {
+        synapse_trace_vector[syn_id] = gradient;
+        gradient_smoothed = gradient;
+    }
+
+    return gradient_smoothed;
+}
+
 void FullyObservedOnlineTrainer::update_pass_one_time_step(
     const uint32_t t,
     Network& net,
@@ -99,17 +141,7 @@ void FullyObservedOnlineTrainer::update_pass_one_time_step(
         // Gradient for the bias term and the
         // time-smoothed version for lowering variance
         double gradient_bias = spiked - membrane_potential;
-        double gradient_bias_smoothed;
-
-        // It is not NaN when t > 0
-        if (!std::isnan(bias_trace_vector[i])) {
-            gradient_bias_smoothed = et_factor * bias_trace_vector[i] + 
-                (1 - et_factor) * (gradient_bias);
-            bias_trace_vector[i] = gradient_bias_smoothed;
-        } else {
-            bias_trace_vector[i] = gradient_bias;
-            gradient_bias_smoothed = gradient_bias;
-        }
+        double gradient_bias_smoothed = smoothed_bias_gradient(i, gradient_bias, et_factor);    
 
         // Update the bias
         neuron.bias += learning_rate * gradient_bias_smoothed;
@@ -123,23 +155,11 @@ void FullyObservedOnlineTrainer::update_pass_one_time_step(
             double sft = saved_filtered_traces_matrix[j][i];
             double gradient_synapse = sft * (spiked - membrane_potential);
 
-            double gradient_synapse_smoothed;
+            double gradient_synapse_smoothed = smoothed_synapse_gradient(j, i, N, gradient_synapse, et_factor);
 
-            const uint32_t syn_id = j * N + i;
-            Synapse& syn          = net.synapse(j, i);        
+            Synapse& syn = net.synapse(j, i);        
 
-            // Calculate smoothed version
-            // It is not NaN when t > 0
-            if (!std::isnan(synapse_trace_vector[syn_id])) {
-                synapse_trace_vector[syn_id] = et_factor * synapse_trace_vector[syn_id] +
-                    (1 - et_factor) * (gradient_synapse);
-                gradient_synapse_smoothed = synapse_trace_vector[syn_id];
-            } else {
-                synapse_trace_vector[syn_id] = gradient_synapse;
-                gradient_synapse_smoothed = gradient_synapse;
-            }
-
-            // Update
+            // Update weight
             syn.weight += learning_rate * gradient_synapse_smoothed;
         }
     }

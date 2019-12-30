@@ -84,6 +84,10 @@ class FullyObservedOnlineTrainer : public Trainer {
              const SignalList& input,
              const SignalList& wanted_output);
 
+        double smoothed_bias_gradient(const NeuronId& i, double gradient, double et_factor);
+        double smoothed_synapse_gradient(const NeuronId& j, const NeuronId& i, const uint32_t N,
+                                         double gradient, double et_factor);
+
         void update_pass_one_time_step(
             const uint32_t t,
             Network& net,
