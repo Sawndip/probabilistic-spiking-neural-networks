@@ -27,16 +27,15 @@ void debug_run() {
     wanted_outputs.add(o2);
 
     FullyObservedOnlineTrainer trainer;
-    trainer.train(net, inputs, wanted_outputs, {0.01, 0.5, 100});
 
     std::cout << "Observed result with no training." << std::endl;
     SignalList f0 = net.forward(inputs, generator);
     std::cout << f0;
 
     SignalList f1;
-    for (std::uint32_t j = 1; j < 10; j++) {
+    for (std::uint32_t j = 1; j < 11; j++) {
         std::cout << "Obeserved results after " << j << " epochs of training." << std::endl;
-        net.train_fully_observed_online(inputs, wanted_outputs, 0.5, 0.02, 1);
+        trainer.train(net, inputs, wanted_outputs, {0.02, 0.5, 1});
         f1 = net.forward(inputs, generator);
         std::cout << f1;
     }

@@ -28,11 +28,29 @@ class Trainer {
 class FullyObservedOnlineTrainer : public Trainer {
     private:
         /// VARIABLES ///
+        // This matrix contains the spiking information
+        // obtained from ground truth.
+        // It is called operating matrix as it is also
+        // used in implementing the forward pass.
+        // In paper it corresponds to s[i, t]
+        // The indexing is time, neuron_id
         DoubleMatrix operating_matrix;
 
+        // This matrix contains the membrane potentials.
+        // In paper it corresponds to sigmoid(u[i, t])
+        // The indexing is time, neuron_id
         DoubleMatrix saved_membrane_potential_matrix;
+
+        // This matrix contains the filtered traces for 
+        // one time step. It is erased and populated
+        // for each time step.
+        // In paper it corresponds to \vec{s}[j, i, t]
+        // for some fixed t and presynaptic j and postsynaptic i
+        // The indexing is neuron_id, neuron_id
         DoubleMatrix saved_filtered_traces_matrix;
 
+        // These are the elegibility traces
+        // for the smoothed gradients 
         vector<double> bias_trace_vector;
         vector<double> synapse_trace_vector;
 
@@ -47,6 +65,13 @@ class FullyObservedOnlineTrainer : public Trainer {
             const uint32_t N
         );
 
+        /*!
+         * It performs the two checks as in Network::forward
+         * and two more additional checks
+         * 1. The number of wanted output signals matches the number of output neurons
+         * 2. The wanted output signals are of same length as the example input signals
+         * TODO: Implement the two extra checks
+         */ 
         void check_input_output(
             const Network& net,
             const SignalList& input,
@@ -61,7 +86,8 @@ class FullyObservedOnlineTrainer : public Trainer {
 
         void update_pass_one_time_step(
             const uint32_t t,
-            Network& net);
+            Network& net,
+            const TrainingParameters& params);
 
     public:
         void train(
