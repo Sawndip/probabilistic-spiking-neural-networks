@@ -2,6 +2,8 @@
 #define TRAINER_H
 
 #include "core/include/network.h"
+#include "core/include/callbacks.h"
+
 
 using namespace std;
 
@@ -78,6 +80,10 @@ class FullyObservedOnlineTrainer : public Trainer {
             const SignalList& wanted_output
         ) const;
 
+        void check_training_params(
+            const TrainingParameters& params
+        ) const;
+
         void forward_pass_one_time_step(
              const uint32_t t,
              const Network& net,
@@ -98,7 +104,8 @@ class FullyObservedOnlineTrainer : public Trainer {
             Network& net,
             const SignalList& input,
             const SignalList& wanted_output,
-            const TrainingParameters& params);
+            const TrainingParameters& params,
+            TrainingProgressTrackAndControlFunction callback = nullptr);
 }; 
 
 #endif

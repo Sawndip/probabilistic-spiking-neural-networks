@@ -168,8 +168,8 @@ class Network {
          * \param std::default_ranom_engine& generator - The generator from which
          * the algorithm will sample uniformly distributed numbers.
          */
-        SignalList forward(const SignalList& input,
-                           std::default_random_engine& generator);
+        const SignalList forward(const SignalList& input,
+                                 std::default_random_engine& generator) const;
 
         friend ostream& operator<<(ostream&, const Network&);
 };

@@ -51,4 +51,11 @@ double convolve(const Synapse& syn,
                 const uint32_t t,
                 const uint32_t j);
 
+/*!
+ * \brief Outputs a vector to stdout.
+ * \param vector<double> v - The vector to print
+ * \param string name - The name of the vector
+ */ 
+void print_vector(vector<double> v, std::string name);
+
 #endif

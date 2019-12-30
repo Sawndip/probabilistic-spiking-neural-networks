@@ -4,7 +4,7 @@
 #include <cstdint>
 
 #include <stdexcept>
-#include <typeindex>
+#include <iostream>
 
 
 double sigmoid(double x) {
@@ -79,4 +79,14 @@ double convolve(const Synapse& syn,
         filtered_trace += spiked * kern_val;
     }
     return filtered_trace;
+}
+
+void print_vector(vector<double> v, std::string name) {
+    std::cout << name << " [";
+
+    for (double e: v) {
+        std::cout << e << " ";
+    }
+
+    std::cout << "]\n";
 }

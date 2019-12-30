@@ -272,8 +272,8 @@ void Network::check_forward_argument(const SignalList& input) const {
     }
 }
 
-SignalList Network::forward(const SignalList& input, 
-                            std::default_random_engine& generator) {
+const SignalList Network::forward(const SignalList& input, 
+                                  std::default_random_engine& generator) const {
     check_forward_argument(input);
 
     // Do the actual forward pass

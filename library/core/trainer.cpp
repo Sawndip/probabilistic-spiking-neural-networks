@@ -21,6 +21,12 @@ void FullyObservedOnlineTrainer::check_input_output(
 
 }
 
+void FullyObservedOnlineTrainer::check_training_params(
+    const TrainingParameters& params
+) const {
+
+}
+
 void FullyObservedOnlineTrainer::forward_pass_one_time_step(
     const uint32_t t,
     const Network& net,
@@ -169,7 +175,8 @@ void FullyObservedOnlineTrainer::train(
     Network& net,
     const SignalList& example_input,
     const SignalList& wanted_output,
-    const TrainingParameters& params) {
+    const TrainingParameters& params,
+    TrainingProgressTrackAndControlFunction callback) {
 
     // Perform some checks
     if (net.total_hidden() > 0)
@@ -177,15 +184,19 @@ void FullyObservedOnlineTrainer::train(
 
     check_input_output(net, example_input, wanted_output);
 
+    check_training_params(params);
+
     // The algorithm
     const uint32_t N = net.total_neurons();
     const uint32_t T = example_input.time_steps();
 
     init_variables(T, N);
 
-    for (uint32_t epoch = 0; epoch < params.epochs; epoch++) {
+    bool should_stop = false;
+
+    for (uint32_t epoch = 0; epoch < params.epochs && !should_stop; epoch++) {
         // For all time steps
-        for (uint32_t t = 0; t < T; t++) {
+        for (uint32_t t = 0; t < T && !should_stop; t++) {
             forward_pass_one_time_step(
                 t, net, example_input, wanted_output
             );
@@ -194,9 +205,16 @@ void FullyObservedOnlineTrainer::train(
                 t, net, params
             );
 
-            // TODO: Explicitelly calculate loss 
-            // and present via callback function 
-            // TODO: Invoke progress tracker callback function here
+            if (callback != nullptr) {
+                // TODO: Explicitelly calculate loss 
+                // and present via callback function 
+                double mle_log_loss = 0.0;
+
+                should_stop = 
+                    callback(net,
+                             bias_trace_vector, synapse_trace_vector,
+                             mle_log_loss, epoch, t);
+            }
         }
     }
 }

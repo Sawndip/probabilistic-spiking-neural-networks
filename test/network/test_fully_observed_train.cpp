@@ -2,8 +2,34 @@
 #include "core/include/network.h"
 #include "core/include/trainer.h"
 
-#include <iostream>
-#include <random>
+#include<iostream>
+#include<random>
+#include<algorithm>
+
+// Just a function to test callbacks
+TrainingProgressTrackAndControlFunction make_train_callback(
+    const uint32_t T,
+    const SignalList& inputs,
+    std::default_random_engine& generator
+) {
+    return [=,&generator](
+        const Network& net,
+        const vector<double>& bias_trace_vector, 
+        const vector<double>& synapse_trace_vector,
+        double mle_log_loss, 
+        uint32_t epoch,
+        uint32_t t) -> bool {
+
+        if (t == T - 1) {
+            std::cout << "Obeserved results after " <<  (epoch + 1) << " epochs of training." << std::endl;
+
+            SignalList f1 = net.forward(inputs, generator);
+            std::cout << f1;
+        }
+
+        return false;
+    };
+}
 
 void debug_run() {
     std::default_random_engine generator;
@@ -32,13 +58,9 @@ void debug_run() {
     SignalList f0 = net.forward(inputs, generator);
     std::cout << f0;
 
-    SignalList f1;
-    for (std::uint32_t j = 1; j < 11; j++) {
-        std::cout << "Obeserved results after " << j << " epochs of training." << std::endl;
-        trainer.train(net, inputs, wanted_outputs, {0.02, 0.5, 1});
-        f1 = net.forward(inputs, generator);
-        std::cout << f1;
-    }
+    trainer.train(net, inputs, wanted_outputs, {0.05, 0.0, 10}, 
+                 make_train_callback(i1.length(),
+                                     inputs, generator));
 }
 
 int main(int argc, char** argv) {
