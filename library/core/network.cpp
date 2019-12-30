@@ -264,35 +264,6 @@ void Network::check_forward_argument(const SignalList& input) {
     }
 }
 
-void __init_matrix(std::vector<std::vector<double>>& matrix, 
-                   const uint32_t T, const uint32_t N) {
-    matrix.resize(T);
-    for(auto& v: matrix) {
-        v.resize(N, 0.0);
-    }
-}
-
-/*!
- * Perform a convolution of previous activations signal with synapse kernel.
- * The parameter t is the current time step in the simulation
- * while pred is the id of the predecessor neuron
- * The parameter matrix is the operation matrix of T rows and N columns.
- */ 
-double __convolve(const Synapse& syn,
-                  const std::vector<std::vector<double>>& matrix,
-                  const uint32_t t,
-                  const uint32_t pred) {
-    const uint32_t K = syn.kernel.size();
-    double filtered_trace = 0.0;
-    for (uint32_t lag = 0; (lag < K) && (t >= lag); lag++) {
-        bool spiked     = matrix[t - lag][pred] > 0 ? true : false;
-        double kern_val = syn.kernel[lag];
-
-        filtered_trace += spiked * kern_val;
-    }
-    return filtered_trace;
-}
-
 SignalList Network::forward(const SignalList& input, 
                             std::default_random_engine& generator) {
     check_forward_argument(input);
@@ -311,7 +282,7 @@ SignalList Network::forward(const SignalList& input,
     // after the membrane potential is sigmoided.
     std::vector<std::vector<double>> matrix;
 
-    __init_matrix(matrix, T, N);
+    init_matrix(matrix, T, N);
 
     // For all time steps
     for (uint32_t t = 0; t < T; t++) {
@@ -332,7 +303,7 @@ SignalList Network::forward(const SignalList& input,
                 // Calculate the convolution of 
                 // the past activations of predecessor
                 // with kernel stored in the synapse
-                double filtered_trace = __convolve(syn, matrix, t, pred);
+                double filtered_trace = convolve(syn, matrix, t, pred);
 
                 // Add the weighted contribution found via convolution
                 matrix[t][i] += syn.weight * filtered_trace;
@@ -389,7 +360,7 @@ void Network::__train_forward_pass_step(
     }
     
     // Reset the saved filtered traces matrix for a new timestep
-    __init_matrix(saved_filtered_traces, N, N);
+    init_matrix(saved_filtered_traces, N, N);
 
     // Go over all neurons and do the feedforward/feedback
     for (NeuronId i = 0; i < N; i++) {
@@ -403,7 +374,7 @@ void Network::__train_forward_pass_step(
             // Calculate the convolution of 
             // the past activations of predecessor
             // with kernel stored in the synapse
-            double filtered_trace = __convolve(syn, membrane_potential_matrix, t, pred);
+            double filtered_trace = convolve(syn, membrane_potential_matrix, t, pred);
 
             // Add the weighted contribution found via convolution
             membrane_potential_matrix[t][i] += syn.weight * filtered_trace;
@@ -537,8 +508,8 @@ void Network::train_fully_observed_online(
     DoubleMatrix saved_membrane_potential_matrix;
     DoubleMatrix saved_filtered_traces;
 
-    __init_matrix(membrane_potential_matrix, T, N);
-    __init_matrix(saved_membrane_potential_matrix, T, N);
+    init_matrix(membrane_potential_matrix, T, N);
+    init_matrix(saved_membrane_potential_matrix, T, N);
 
     // ellegibility traces (averaged gradients over time)
     // At time 0 we must use only the gradient.

@@ -1,6 +1,7 @@
 add_library(pssn SHARED
             core/signal.cpp
             core/util.cpp
+            core/trainer.cpp
             core/network.cpp
             generator/deterministic.cpp
            )

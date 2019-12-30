@@ -4,6 +4,7 @@
 #include <cstdint>
 
 #include <stdexcept>
+#include <typeindex>
 
 
 double sigmoid(double x) {
@@ -57,4 +58,25 @@ exponentially_decaying_feedback_kernel(
     }
 
     return kernel;
+}
+
+void init_matrix(DoubleMatrix& m, const uint32_t N, const uint32_t M) {
+    m.resize(N);
+    for(auto& v: m)
+        v.resize(M, 0.0);
+}
+
+double convolve(const Synapse& syn,
+                const DoubleMatrix& matrix,
+                const uint32_t t,
+                const uint32_t j) {
+    const uint32_t K = syn.kernel.size();
+    double filtered_trace = 0.0;
+    for (uint32_t lag = 0; (lag < K) && (t >= lag); lag++) {
+        bool spiked     = matrix[t - lag][j] > 0 ? true : false;
+        double kern_val = syn.kernel[lag];
+
+        filtered_trace += spiked * kern_val;
+    }
+    return filtered_trace;
 }
