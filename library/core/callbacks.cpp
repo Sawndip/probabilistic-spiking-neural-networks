@@ -68,3 +68,30 @@ stop_on_small_gradients(const double epsilon) {
         return grad_norm_bias <= epsilon && grad_norm_syn <= epsilon;
     };
 }
+
+// TODO: Implement me when internet is available
+// Documentation must be consulted for the iterators.
+// TrainingProgressTrackAndControlFunction 
+// merge(TrainingCallbackFunctionsIterator begin, 
+//       TrainingCallbackFunctionsIterator end) {
+//     return [&](
+//         const Network& net, 
+//         const vector<double>& bias_trace_vector,
+//         const vector<double>& synapse_trace_vector,
+//         double mll,
+//         uint32_t epoch, 
+//         uint32_t t
+//     ) -> bool {
+//         bool should_stop = false;
+
+//         auto it = begin;
+//         while(it != end) {
+
+//             should_stop = should_stop ||    
+//                 it(net, bias_trace_vector, synapse_trace_vector, mll, epoch, t);
+//             it++;
+//         }
+
+//         return should_stop;
+//     };
+// }
