@@ -1,10 +1,10 @@
 #include "core/include/util.h"
 
-#include <cmath>
-#include <cstdint>
+#include<cmath>
+#include<numeric>
 
-#include <stdexcept>
-#include <iostream>
+#include<stdexcept>
+#include<iostream>
 
 
 double sigmoid(double x) {
@@ -81,7 +81,7 @@ double convolve(const Synapse& syn,
     return filtered_trace;
 }
 
-void print_vector(vector<double> v, std::string name) {
+void print_vector(std::vector<double> v, std::string name) {
     std::cout << name << " [";
 
     for (double e: v) {
@@ -89,4 +89,26 @@ void print_vector(vector<double> v, std::string name) {
     }
 
     std::cout << "]\n";
+}
+
+double vector_l2_norm(const std::vector<double>& v) {
+    // These are NaN safe norms as some vectors
+    // like synapse elegibility trace might contain NaNs by definition
+
+    // std::transform_reduce();
+
+    double norm_squared = std::transform_reduce(v.cbegin(),
+                              v.cend(),
+                              0.0, 
+                              [](double a, double b) -> double { return a + b; },
+                              [](double x) -> double 
+                              { 
+                                  if (std::isnan(x)) {
+                                    return 0.0;
+                                  } else {
+                                    return x * x;
+                                  }
+                              });
+
+    return sqrt(norm_squared);
 }

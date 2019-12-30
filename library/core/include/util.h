@@ -56,6 +56,8 @@ double convolve(const Synapse& syn,
  * \param vector<double> v - The vector to print
  * \param string name - The name of the vector
  */ 
-void print_vector(vector<double> v, std::string name);
+void print_vector(std::vector<double> v, std::string name);
+
+double vector_l2_norm(const std::vector<double>& v);
 
 #endif

@@ -2,6 +2,7 @@
 #define CALLBACKS_H
 
 #include "core/include/network.h"
+#include "core/include/util.h"
 
 #include<functional>
 #include<string>
@@ -25,9 +26,12 @@ TrainingProgressTrackAndControlFunction;
  * Write the full information to a CSV file.
  * For example that CSV file can later be visualized in a jupyter notebook.
  * This function always returns a callback which returns false.
+ * 
+ * Some values for synapse weights and gradients in the output can be NaN.
+ * This indicates the cases when there are no connections.
  */ 
 TrainingProgressTrackAndControlFunction 
-csv_writer(const std::string& output_path);
+csv_writer(const std::string& output_path, const uint32_t n_neurons);
 
 /*!
  * This function will stop the training process if the L2 gradient magnitude

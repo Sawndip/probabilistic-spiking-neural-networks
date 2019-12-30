@@ -40,7 +40,7 @@ void Signal::pad(const uint32_t target_length, const bool value) {
 Signal Signal::from_string(std::string spec) {
     Signal signal(spec.size());
 
-    for(int i = 0; i < spec.size(); i++) {
+    for(uint32_t i = 0; i < spec.size(); i++) {
         signal.data()[i] = spec[i] == '^';
     }
 
@@ -66,7 +66,7 @@ SignalList::SignalList(const std::uint32_t n_signals) {
 SignalList::SignalList(const std::uint32_t n_signals, 
                        const std::uint32_t time_steps) {
     signals.resize(n_signals);
-    for (int i = 0; i < n_signals; i++) {
+    for (uint32_t i = 0; i < n_signals; i++) {
         signals[i] = Signal(time_steps);
     }
 }

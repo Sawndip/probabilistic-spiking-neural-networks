@@ -349,20 +349,20 @@ const SignalList Network::forward(const SignalList& input,
 
 // This is also very slow. Of 8 seconds,
 // 6 were needed for the printing of the huge 360000 synapse network
-ostream& operator<<(ostream& out, const Network& net) {
-    out << "NETWORK STATISTICS - NEURONS" << endl;
+std::ostream& operator<<(std::ostream& out, const Network& net) {
+    out << "NETWORK STATISTICS - NEURONS" << std::endl;
 
     out << "INPUT " << net.n_input 
         << " HIDDEN " << net.n_hidden
         << " OUTPUT " << net.n_output 
         << " TOTAL " << net.neurons.size()
-        << endl;
+        << std::endl;
 
-    out << "NETWORK STATISTICS - SYNAPSES" << endl;
+    out << "NETWORK STATISTICS - SYNAPSES" << std::endl;
 
-    out << "TOTAL SYNAPSES " << net.synapses.size() << endl << endl;
+    out << "TOTAL SYNAPSES " << net.synapses.size() << std::endl << std::endl;
 
-    out << "SYNAPSE ADJACENCY LIST (PRESYNAPTIC | LIST POSTSYNAPTIC | TOTAL POST)" << endl;
+    out << "SYNAPSE ADJACENCY LIST (PRESYNAPTIC | LIST POSTSYNAPTIC | TOTAL POST)" << std::endl;
 
     std::array<std::string, 3> type_names = {"INPUT", "HIDDEN", "OUTPUT"};
 
@@ -371,7 +371,7 @@ ostream& operator<<(ostream& out, const Network& net) {
         for (const NeuronId& n2_id: n.successor_neurons) {
             out << (type_names[net.neurons[n2_id].type]) << " " << n2_id << ", "; 
         }
-        out << "| " << n.successor_neurons.size() << endl;
+        out << "| " << n.successor_neurons.size() << std::endl;
     }
 
     return out;

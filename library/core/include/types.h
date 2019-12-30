@@ -5,15 +5,13 @@
 #include<functional>
 #include<cstdint>
 
-using namespace std;
-
 /*!
  * A matrix of doubles is used intensively in both forward and
  * training algorithms of the SNN.
  * 
  * The matrix is a vector of vectors.
  */ 
-typedef vector<vector<double>> DoubleMatrix;
+typedef std::vector<std::vector<double>> DoubleMatrix;
 
 /*!
  * The unqiue index into the neuron list for a neuron.
@@ -44,8 +42,8 @@ struct Neuron {
     NeuronId id;
     double bias;
 
-    vector<NeuronId> predecessor_neurons;
-    vector<NeuronId> successor_neurons;
+    std::vector<NeuronId> predecessor_neurons;
+    std::vector<NeuronId> successor_neurons;
 };
 
 /*!
@@ -54,7 +52,7 @@ struct Neuron {
  * Any changes must write directly to this list.
  * To access individual entries the Neuron::id attribute is to be used.
  */ 
-typedef vector<Neuron> NeuronList;
+typedef std::vector<Neuron> NeuronList;
 
 /*!
  * The Synapse struct contains the following three members:
@@ -75,7 +73,7 @@ struct Synapse {
  * This is intended to be a single source of truth for all synapses/links in the network.
  * All operations must write only to this class instance.
  */
-typedef vector<Synapse> SynapseList;
+typedef std::vector<Synapse> SynapseList;
 
 /*!
  * A network generator function specifies if a synapse should be formed between
@@ -85,10 +83,10 @@ typedef vector<Synapse> SynapseList;
  * The library provided methods, e.g. fully_connected_init will return a 
  * NetworkGeneratorFunction as their output upon invocation.
  */
-typedef function<bool(const Neuron&, const Neuron&)> 
+typedef std::function<bool(const Neuron&, const Neuron&)> 
 NetworkGeneratorFunction;
 
-typedef function<vector<double>(const Neuron&, const Neuron&)>
+typedef std::function<std::vector<double>(const Neuron&, const Neuron&)>
 KernelInitializerFunction;
 
 /*!
@@ -100,7 +98,7 @@ KernelInitializerFunction;
  *  Note: This function is invoked after the network is constructed and it only modifies the weights.
  *  It can not influence the existence of synapses in any form.
  */
-typedef function<double(const NeuronList&, const Neuron&, const Neuron&)> 
+typedef std::function<double(const NeuronList&, const Neuron&, const Neuron&)> 
 WeightInitializerFunction;
 
 #endif

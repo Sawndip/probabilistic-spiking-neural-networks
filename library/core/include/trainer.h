@@ -5,9 +5,6 @@
 #include "core/include/callbacks.h"
 
 
-using namespace std;
-
-
 struct TrainingParameters {
     double learning_rate;
     double ellegibility_trace_factor;
@@ -53,8 +50,8 @@ class FullyObservedOnlineTrainer : public Trainer {
 
         // These are the elegibility traces
         // for the smoothed gradients 
-        vector<double> bias_trace_vector;
-        vector<double> synapse_trace_vector;
+        std::vector<double> bias_trace_vector;
+        std::vector<double> synapse_trace_vector;
 
         /// FUNCTIONS ///
         /*!

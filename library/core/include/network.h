@@ -10,8 +10,6 @@
 #include "core/include/util.h"
 #include "core/include/signal.h"
 
-using namespace std;
-
 /*!
  * \brief Every neuron is connected to every other neuron irregardles of the neuron type
  * 
@@ -171,7 +169,7 @@ class Network {
         const SignalList forward(const SignalList& input,
                                  std::default_random_engine& generator) const;
 
-        friend ostream& operator<<(ostream&, const Network&);
+        friend std::ostream& operator<<(std::ostream&, const Network&);
 };
 
 #endif 
