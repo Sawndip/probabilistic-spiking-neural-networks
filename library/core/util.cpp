@@ -94,21 +94,15 @@ void print_vector(std::vector<double> v, std::string name) {
 double vector_l2_norm(const std::vector<double>& v) {
     // These are NaN safe norms as some vectors
     // like synapse elegibility trace might contain NaNs by definition
-
-    // std::transform_reduce();
-
-    double norm_squared = std::transform_reduce(v.cbegin(),
+    double norm_squared = std::transform_reduce(
+                              v.cbegin(),
                               v.cend(),
-                              0.0, 
-                              [](double a, double b) -> double { return a + b; },
+                              // Initial value of 0
+                              0.0,
+                              // Reduction
+                              std::plus<double>(), 
+                              // Transformation
                               [](double x) -> double 
-                              { 
-                                  if (std::isnan(x)) {
-                                    return 0.0;
-                                  } else {
-                                    return x * x;
-                                  }
-                              });
-
+                              { return std::isnan(x) ? 0.0 : x * x; });
     return sqrt(norm_squared);
 }
