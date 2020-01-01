@@ -6,35 +6,6 @@
 #include<random>
 #include<algorithm>
 
-// Just a function to test callbacks
-TrainingProgressTrackAndControlFunction make_train_callback(
-    const uint32_t T,
-    const SignalList& inputs,
-    std::default_random_engine& generator
-) {
-    return [=,&generator](
-        const Network& net,
-        const vector<double>& bias_trace_vector, 
-        const vector<double>& synapse_trace_vector,
-        double mle_log_loss, 
-        uint32_t epoch,
-        uint32_t t) -> bool {
-
-        if (t == T - 1) {
-            std::cout << "Obeserved results after " <<  (epoch + 1) << " epochs of training." << std::endl;
-
-            SignalList f1 = net.forward(inputs, generator);
-            std::cout << f1;
-
-            std::cout << "loss: " << mle_log_loss << std::endl;
-            std::cout << "gradient norm bias: " << vector_l2_norm(bias_trace_vector) << std::endl;
-            std::cout << "gradient norm synapse: " << vector_l2_norm(synapse_trace_vector) << std::endl;
-        }
-
-        return false;
-    };
-}
-
 void debug_run() {
     std::default_random_engine generator;
     generator.seed(1337);
@@ -62,9 +33,17 @@ void debug_run() {
     SignalList f0 = net.forward(inputs, generator);
     std::cout << f0;
 
-    trainer.train(net, inputs, wanted_outputs, {0.05, 0.5, 20}, 
-                 make_train_callback(i1.length(),
-                                     inputs, generator));
+    const uint32_t T = inputs.time_steps();
+
+    auto callback = merge_callbacks({
+        on_epoch_end_stats_logger(T),
+        on_epoch_end_net_forward(T, inputs, generator),
+        // csv_writer("test_fully_observed_trainer.csv", net.total_neurons()),
+        stop_on_acceptable_loss(T, -7.0),
+        stop_on_small_gradients(T, 0.4, 0.15)
+    });
+
+    trainer.train(net, inputs, wanted_outputs, {0.05, 0.5, 40}, callback);
 }
 
 int main(int argc, char** argv) {

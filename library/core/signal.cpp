@@ -13,6 +13,20 @@ Signal::Signal(const std::uint32_t time_steps) {
     signal.assign(time_steps, false);
 }
 
+Signal::Signal(const Signal& other) {
+    std::copy(other.signal.begin(), other.signal.end(), this->signal.begin());
+}
+
+Signal::Signal(const Signal&& other) {
+    std::move(other.signal.begin(), other.signal.end(), this->signal.begin());
+}
+
+const Signal& Signal::operator=(const Signal& other) {
+    std::copy(other.signal.begin(), other.signal.end(), this->signal.begin());
+
+    return *this;
+}
+
 signal_t& Signal::data() {
     return this->signal;
 }
@@ -69,6 +83,18 @@ SignalList::SignalList(const std::uint32_t n_signals,
     for (uint32_t i = 0; i < n_signals; i++) {
         signals[i] = Signal(time_steps);
     }
+}
+
+SignalList::SignalList(const SignalList& other) {
+    signals.reserve(other.signals.size());
+
+    std::copy(other.signals.begin(), other.signals.end(), this->signals.begin());
+}
+
+SignalList::SignalList(const SignalList&& other) {
+    signals.reserve(other.signals.size());
+
+    std::move(other.signals.begin(), other.signals.end(), this->signals.begin());
 }
 
 signal_list_t& SignalList::data() {

@@ -1,5 +1,7 @@
 #include "core/include/trainer.h"
 
+#include <iostream>
+
 void FullyObservedOnlineTrainer::init_variables(
     const uint32_t T,
     const uint32_t N) {
@@ -253,6 +255,13 @@ void FullyObservedOnlineTrainer::train(
                     callback(net,
                              bias_trace_vector, synapse_trace_vector,
                              mle_log_loss, epoch, t);
+
+                if (should_stop) {
+                    std::cout << "Callback commanded stop at epoch " 
+                              << epoch << " with time step t = " << t
+                              << std::endl;
+                    std::cout << "Final loss: " << mle_log_loss << std::endl;
+                }
             }
         }
     }

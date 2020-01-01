@@ -56,6 +56,10 @@ class Signal {
 
         Signal();
         Signal(const std::uint32_t time_steps);
+        Signal(const Signal& other);
+        Signal(const Signal&& other);
+
+        const Signal& operator=(const Signal& other);
 
         friend std::ostream& operator<<(std::ostream&, Signal&); 
 };
@@ -108,6 +112,9 @@ class SignalList {
         SignalList();
         SignalList(const uint32_t n_signals);
         SignalList(const uint32_t n_signals, const uint32_t time_steps);
+        
+        SignalList(const SignalList& other);
+        SignalList(const SignalList&& other);
 
         friend std::ostream& operator<<(std::ostream&, SignalList&); 
 };
