@@ -4,6 +4,8 @@
 #include<algorithm>
 
 // TODO: Also write biases and weights to the output, not just the gradients
+// That will require changes to the TrainingProgressTrackAndControlFunction
+// declaration
 TrainingProgressTrackAndControlFunction 
 csv_writer(const std::string& output_path,
            const uint32_t n_neurons) {
@@ -53,7 +55,8 @@ csv_writer(const std::string& output_path,
 }
 
 TrainingProgressTrackAndControlFunction 
-stop_on_small_gradients(const double epsilon) {
+stop_on_small_gradients(const double epsilon_bias, 
+                        const double epsilon_synapse) {
     return [=](
         const Network&, 
         const vector<double>& bias_trace_vector,
@@ -65,15 +68,29 @@ stop_on_small_gradients(const double epsilon) {
         double grad_norm_bias = vector_l2_norm(bias_trace_vector);
         double grad_norm_syn  = vector_l2_norm(synapse_trace_vector);
 
-        return grad_norm_bias <= epsilon && grad_norm_syn <= epsilon;
+        return grad_norm_bias <= epsilon_bias && grad_norm_syn <= epsilon_synapse;
     };
 }
 
-// TODO: Implement me when internet is available
-// Documentation must be consulted for the iterators.
-// TrainingProgressTrackAndControlFunction 
-// merge(TrainingCallbackFunctionsIterator begin, 
-//       TrainingCallbackFunctionsIterator end) {
+TrainingProgressTrackAndControlFunction
+stop_on_acceptable_loss(const double epsilon_loss) {
+    return [=](
+        const Network&, 
+        const vector<double>&,
+        const vector<double>&,
+        double mle_log_loss,
+        uint32_t, 
+        uint32_t
+    ) -> bool {  
+        return mle_log_loss >= epsilon_loss;
+    };
+}
+
+// The problem is that the == and != operators do not work
+// on the custom iterator we create. Why? Because of functions?
+// TrainingProgressTrackAndControlFunction
+// merge_callbacks(TrainingCallbackFunctionsIterator begin, 
+//                 TrainingCallbackFunctionsIterator end) {
 //     return [&](
 //         const Network& net, 
 //         const vector<double>& bias_trace_vector,
@@ -82,16 +99,10 @@ stop_on_small_gradients(const double epsilon) {
 //         uint32_t epoch, 
 //         uint32_t t
 //     ) -> bool {
-//         bool should_stop = false;
-
-//         auto it = begin;
-//         while(it != end) {
-
-//             should_stop = should_stop ||    
-//                 it(net, bias_trace_vector, synapse_trace_vector, mll, epoch, t);
-//             it++;
-//         }
-
-//         return should_stop;
+//         return std::transform_reduce(begin, end, false, 
+//             [&](bool b1, bool b2) -> bool { return b1 || b2; }, 
+//             [&](const auto& f)    -> bool { return f(net, bias_trace_vector, synapse_trace_vector, 
+//                                                      mll, epoch, t);  }
+//         );
 //     };
 // }

@@ -27,6 +27,8 @@ TrainingProgressTrackAndControlFunction make_train_callback(
             std::cout << f1;
 
             std::cout << "loss: " << mle_log_loss << std::endl;
+            std::cout << "gradient norm bias: " << vector_l2_norm(bias_trace_vector) << std::endl;
+            std::cout << "gradient norm synapse: " << vector_l2_norm(synapse_trace_vector) << std::endl;
         }
 
         return false;

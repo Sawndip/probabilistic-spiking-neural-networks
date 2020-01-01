@@ -6,6 +6,7 @@
 
 #include<functional>
 #include<string>
+#include<iterator>
 
 using namespace std;
 
@@ -35,16 +36,33 @@ csv_writer(const std::string& output_path, const uint32_t n_neurons);
 
 /*!
  * This function will stop the training process if the L2 gradient magnitude
- * of both gradient vectors is less than the given parameter epsilon
+ * of both gradient vectors is less than the given parameters
  * 
- * \param double epsilon
+ * \param double epsilon_bias
+ * \param double epsilon_synapse
+ * 
+ * NOTE: The default values are for some dummy test problems in the library.
+ * Please change them accordingly for your problem at hand.
  */ 
 TrainingProgressTrackAndControlFunction 
-stop_on_small_gradients(const double epsilon = 1e-6);
+stop_on_small_gradients(const double epsilon_bias = 0.45,
+                        const double epsilon_synapse = 0.15);
+
+/*!
+ * This function will stop the training process if the log loss is greater than
+ * the epsilon parameter.
+ * 
+ * \param double epsilon_loss
+ * 
+ * NOTE: The default value is for some dummy test problems in the library.
+ * Please change it accordingly for your problem at hand.
+ */ 
+TrainingProgressTrackAndControlFunction
+stop_on_acceptable_loss(const double epsilon_loss = -7.0);
 
 // Just a typedef for super long c++ type names
 typedef 
-iterator<forward_iterator_tag, TrainingProgressTrackAndControlFunction>
+std::iterator<std::input_iterator_tag, TrainingProgressTrackAndControlFunction>
 TrainingCallbackFunctionsIterator;
 
 /*!
@@ -53,7 +71,7 @@ TrainingCallbackFunctionsIterator;
  * if at least one callback returns True
  */ 
 TrainingProgressTrackAndControlFunction 
-merge(TrainingCallbackFunctionsIterator begin, 
-      TrainingCallbackFunctionsIterator end);
+merge_callbacks(TrainingCallbackFunctionsIterator begin, 
+                TrainingCallbackFunctionsIterator end);
 
 #endif
