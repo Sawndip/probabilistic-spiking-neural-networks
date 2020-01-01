@@ -25,6 +25,8 @@ TrainingProgressTrackAndControlFunction make_train_callback(
 
             SignalList f1 = net.forward(inputs, generator);
             std::cout << f1;
+
+            std::cout << "loss: " << mle_log_loss << std::endl;
         }
 
         return false;
@@ -36,7 +38,7 @@ void debug_run() {
     generator.seed(1337);
 
     Network net = Network(2, 0, 2,
-                          fully_connected_init(), 
+                          perceptron_init_simple(), 
                           glorot_weights(generator));
 
     Signal i1 = Signal::from_string("^^^___");
@@ -58,7 +60,7 @@ void debug_run() {
     SignalList f0 = net.forward(inputs, generator);
     std::cout << f0;
 
-    trainer.train(net, inputs, wanted_outputs, {0.05, 0.0, 10}, 
+    trainer.train(net, inputs, wanted_outputs, {0.05, 0.5, 20}, 
                  make_train_callback(i1.length(),
                                      inputs, generator));
 }

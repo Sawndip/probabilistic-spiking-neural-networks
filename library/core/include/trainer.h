@@ -69,7 +69,6 @@ class FullyObservedOnlineTrainer : public Trainer {
          * and two more additional checks
          * 1. The number of wanted output signals matches the number of output neurons
          * 2. The wanted output signals are of same length as the example input signals
-         * TODO: Implement the two extra checks
          */ 
         void check_input_output(
             const Network& net,
@@ -77,6 +76,10 @@ class FullyObservedOnlineTrainer : public Trainer {
             const SignalList& wanted_output
         ) const;
 
+        /*!
+         * It checks that learning rate and ellegibility trace factors are between 0 and 1.
+         * It also checks that the number of epochs is finite.
+         */ 
         void check_training_params(
             const TrainingParameters& params
         ) const;
@@ -95,6 +98,8 @@ class FullyObservedOnlineTrainer : public Trainer {
             const uint32_t t,
             Network& net,
             const TrainingParameters& params);
+
+        double calculate_mll_loss();
 
     public:
         void train(

@@ -60,10 +60,13 @@ exponentially_decaying_feedback_kernel(
     return kernel;
 }
 
-void init_matrix(DoubleMatrix& m, const uint32_t N, const uint32_t M) {
+void init_matrix(DoubleMatrix& m, 
+                const uint32_t N, 
+                const uint32_t M,
+                double val) {
     m.resize(N);
     for(auto& v: m)
-        v.resize(M, 0.0);
+        v.resize(M, val);
 }
 
 double convolve(const Synapse& syn,

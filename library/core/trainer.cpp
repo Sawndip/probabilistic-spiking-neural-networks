@@ -4,9 +4,12 @@ void FullyObservedOnlineTrainer::init_variables(
     const uint32_t T,
     const uint32_t N) {
 
-    init_matrix(operating_matrix, T, N);
-    init_matrix(saved_membrane_potential_matrix, T, N);
-    init_matrix(saved_filtered_traces_matrix, N, N);
+    // Initialize to NaNs so errors in implementation can be caught earlier
+    // In addition with such initialization we can implement log-loss calculations
+    // for every time step in an easier way.
+    init_matrix(operating_matrix, T, N, std::nan(""));
+    init_matrix(saved_membrane_potential_matrix, T, N, std::nan(""));
+    init_matrix(saved_filtered_traces_matrix, N, N, std::nan(""));
 
     bias_trace_vector.resize(N, std::nan(""));
     synapse_trace_vector.resize(N * N, std::nan(""));
@@ -31,10 +34,10 @@ void FullyObservedOnlineTrainer::check_training_params(
 ) const {
 
     if (params.learning_rate <= 0 || params.learning_rate >= 1)
-        throw std::invalid_argument("The learning rate must be in range(0, 1]");
+        throw std::invalid_argument("The learning rate must be in range (0, 1]");
 
-    if (params.ellegibility_trace_factor <= 0 || params.ellegibility_trace_factor >= 1)
-        throw std::invalid_argument("The elegibilility trace factor must be in range(0, 1]");
+    if (params.ellegibility_trace_factor < 0 || params.ellegibility_trace_factor >= 1)
+        throw std::invalid_argument("The elegibilility trace factor must be in range [0, 1]");
 
     if (!std::isfinite(params.epochs))
         throw std::invalid_argument("The number of epochs must be finite.");
@@ -51,6 +54,11 @@ void FullyObservedOnlineTrainer::forward_pass_one_time_step(
     // First load all inputs
     for (NeuronId i = 0; i < net.total_inputs(); i++) {
         operating_matrix[t][i] = example_input.cdata()[i].cdata()[t];
+    }
+
+    // And set all outputs to zero before doing forward or backward
+    for (NeuronId i = net.total_inputs(); i < net.total_neurons(); i++) {
+        operating_matrix[t][i] = 0.0;
     }
 
     // Reset the saved filtered traces matrix for a new timestep
@@ -184,6 +192,26 @@ void FullyObservedOnlineTrainer::update_pass_one_time_step(
     }
 }
 
+double FullyObservedOnlineTrainer::calculate_mll_loss() {
+    double log_loss = 0.0;
+
+    for (uint32_t t = 0; t < operating_matrix.size(); t++) {
+        for (uint32_t i = 0; i < operating_matrix[0].size(); i++) {
+            if (std::isnan(operating_matrix[t][i]))
+                return log_loss;
+
+            double p = saved_membrane_potential_matrix[t][i];
+            double s = operating_matrix[t][i];
+
+            double a = s * std::log(p) + (1 - s) * std::log(1 - p);
+
+            log_loss += a;
+        }
+    }
+
+    return log_loss;
+}
+
 void FullyObservedOnlineTrainer::train(
     Network& net,
     const SignalList& example_input,
@@ -219,9 +247,7 @@ void FullyObservedOnlineTrainer::train(
             );
 
             if (callback != nullptr) {
-                // TODO: Explicitelly calculate loss 
-                // and present via callback function 
-                double mle_log_loss = 0.0;
+                double mle_log_loss = calculate_mll_loss();
 
                 should_stop = 
                     callback(net,

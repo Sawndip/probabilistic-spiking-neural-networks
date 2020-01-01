@@ -290,13 +290,19 @@ const SignalList Network::forward(const SignalList& input,
     // after the membrane potential is sigmoided.
     DoubleMatrix operating_matrix;
 
-    init_matrix(operating_matrix, T, N);
+    // Initialize to NaNs so errors in implementation can be caught earlier
+    init_matrix(operating_matrix, T, N, std::nan(""));
 
     // For all time steps
     for (uint32_t t = 0; t < T; t++) {
         // First load all inputs
         for (NeuronId i = 0; i < this->n_input; i++) {
             operating_matrix[t][i] = input.cdata()[i].cdata()[t];
+        }
+
+        // And set all outputs to zero before doing forward or backward
+        for (NeuronId i = total_inputs(); i < total_neurons(); i++) {
+            operating_matrix[t][i] = 0.0;
         }
         
         // Go over all neurons and do the feedforward/feedback

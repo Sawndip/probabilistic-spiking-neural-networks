@@ -33,12 +33,16 @@ exponentially_decaying_feedback_kernel(
     const double time_constant); 
 
 /*!
- * \brief Initialize a matrix with the default element (usually 0)
+ * \brief Initialize a matrix with the default element
  * 
  * \param uint32_t N - The first dimension of the matrix (rows)
  * \param uint32_t M - The second dimension of the matrix (columns)
+ * \param double v - The value to initialize with
  */ 
-void init_matrix(DoubleMatrix& m, const uint32_t N, const uint32_t M);
+void init_matrix(DoubleMatrix& m, 
+                 const uint32_t N,
+                 const uint32_t M, 
+                 double v = 0);
 
 /*!
  * Perform a convolution of previous activations signal with synapse kernel.
