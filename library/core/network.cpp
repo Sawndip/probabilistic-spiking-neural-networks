@@ -179,7 +179,10 @@ void Network::init_connections(NetworkGeneratorFunction network_gen_func,
         }
     }
 
-    if (this->synapses.size() == 0)
+    bool not_ok = std::all_of(this->synapses.begin(), this->synapses.end(),
+                             [](const Synapse& s) -> bool { return std::isnan(s.weight); });
+
+    if (not_ok)
         throw std::logic_error("There are 0 synapses after the construction procedure");
 }
 

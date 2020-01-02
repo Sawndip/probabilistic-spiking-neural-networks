@@ -41,8 +41,8 @@ void FullyObservedOnlineTrainer::check_training_params(
     if (params.ellegibility_trace_factor < 0 || params.ellegibility_trace_factor >= 1)
         throw std::invalid_argument("The elegibilility trace factor must be in range [0, 1]");
 
-    if (!std::isfinite(params.epochs))
-        throw std::invalid_argument("The number of epochs must be finite.");
+    if (!std::isfinite(params.epochs) || params.epochs <= 0)
+        throw std::invalid_argument("The number of epochs must be finite and positive.");
 }
 
 void FullyObservedOnlineTrainer::forward_pass_one_time_step(
