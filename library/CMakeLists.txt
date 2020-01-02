@@ -8,3 +8,7 @@ add_library(pssn SHARED
            )
 
 set_target_properties(pssn PROPERTIES VERSION ${PROJECT_VERSION})
+
+target_compile_features(pssn PUBLIC cxx_std_17)
+
+target_compile_options(pssn PRIVATE -Wall -Wextra -pedantic)
