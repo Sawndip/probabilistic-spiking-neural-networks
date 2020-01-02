@@ -166,14 +166,6 @@ make_test(
     5 3 100 100 4 7 0.01 0.8 0 5 0 3 0 0 1
 )
 
-# For some reason this test hangs?
-# TODO FIXME
-# make_test(
-#     test_fully_observed_train
-#     "NO_REGEX"
-#     5 3 100 100 4 7 0.01 0.8 -30 5 0 3 0 0 1
-# )
-
 # Test for crash when we invoke with perceptron_init_hidden
 # It should crash on basis that no synapses exist in the constructed network
 make_test(
