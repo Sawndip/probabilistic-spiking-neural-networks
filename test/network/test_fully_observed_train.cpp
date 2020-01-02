@@ -35,19 +35,18 @@ void debug_run() {
 
     const uint32_t T = inputs_ptr->time_steps();
 
-    std::string output_csv_path = "test_fully_observed_trainer.csv";
+    std::string output_csv_path("test_fully_observed_trainer.csv");
 
-    // What is the problem with the initializer list and anything more
-    // complicated than a double or int being wrongly copied 
-    // to the lambdas inside...????
-    // [It is not limited to our custom types but also problems std::string as well]
-    auto callback = merge_callbacks({
+    std::initializer_list<TrainingProgressTrackAndControlFunction>
+    callbacks = {
         on_epoch_end_stats_logger(T),
-        // on_epoch_end_net_forward(T, inputs_ptr, generator),
-        csv_writer(output_csv_path, net.total_neurons()),
+        on_epoch_end_net_forward(T, inputs_ptr, generator),
+        csv_writer(output_csv_path, net.total_neurons(), T),
         stop_on_acceptable_loss(T, -7.0),
         stop_on_small_gradients(T, 0.4, 0.15)
-    });
+    };
+    
+    auto callback = merge_callbacks(callbacks);
 
     trainer.train(net, *inputs_ptr, wanted_outputs, {0.05, 0.5, 40}, callback);
 }

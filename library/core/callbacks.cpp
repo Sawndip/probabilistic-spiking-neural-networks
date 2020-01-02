@@ -3,25 +3,18 @@
 #include<fstream>
 #include<algorithm>
 #include<iostream>
-#include<cerrno>
 
-// FIXME: The file is not opened. Investigate why.
 // TODO: Also write biases and weights to the output, not just the gradients
 TrainingProgressTrackAndControlFunction 
 csv_writer(std::string output_path,
-           const uint32_t n_neurons) {
+           const uint32_t n_neurons,
+           const uint32_t time_steps) {
     // Empty the file
     std::ofstream file;
     file.exceptions(std::ifstream::failbit | std::ifstream::badbit);
     
-    try {
-        file.open(output_path, std::ios::trunc);
-    } catch (std::system_error& e) {
-        std::cerr << e.code().message() << std::endl;
-
-        throw std::runtime_error("Can't open file for CSV logging!");
-    }
-
+    file.open(output_path, std::ios::trunc);
+   
     // Make the header
     file << "# PSNN training progress log #" << std::endl;
     file << "epoch,time,";
@@ -33,13 +26,13 @@ csv_writer(std::string output_path,
             file << "synapse_gradient_(" << j << ';' << i << "),";
         }
     }
-    file << "mle_log_loss" << std::endl; 
+    file << "mle_log_loss,epoch_end" << std::endl; 
     file.flush();
     // Close the file as it will be opened again inside the callback
     file.close();
 
-    return [output_path, n_neurons](
-        const Network& net, 
+    return [output_path, n_neurons, time_steps](
+        const Network&, 
         const vector<double>& bias_trace_vector,
         const vector<double>& synapse_trace_vector,
         double mle_log_loss,
@@ -49,21 +42,8 @@ csv_writer(std::string output_path,
         std::ofstream file_inner;
         file_inner.exceptions(std::ifstream::failbit | std::ifstream::badbit);
         
-        try {
-            file_inner.open(output_path, std::ios::app);
-        } catch (std::system_error& e) {
-            std::cerr << e.what() << std::endl;
-            std::cerr << e.code().message() << std::endl;
-
-            try {
-                throw std::system_error(errno, std::system_category(), "failed to open");
-            } catch (std::system_error& e2) {
-                std::cerr << e2.what() << std::endl;
-            }
-
-            throw std::runtime_error("Can't open file for CSV logging!");
-        }
-        
+        file_inner.open(output_path, std::ios::app);
+    
         file_inner << epoch << ',' << t << ',';
         for (uint32_t i = 0; i < n_neurons; i++) {
             file_inner << bias_trace_vector[i] << ',';
@@ -73,7 +53,9 @@ csv_writer(std::string output_path,
                 file_inner << synapse_trace_vector[j * n_neurons + i] << ',';
             }
         }
-        file_inner << mle_log_loss << std::endl;
+        file_inner << mle_log_loss << ","
+                   << (t == time_steps - 1 ? 1 : 0)
+                   << std::endl;
 
         file_inner.flush();
         file_inner.close();
@@ -85,7 +67,7 @@ csv_writer(std::string output_path,
 TrainingProgressTrackAndControlFunction
 on_epoch_end_stats_logger(const uint32_t time_steps) {
     return [=](
-        const Network& net, 
+        const Network&, 
         const vector<double>& bias_trace_vector,
         const vector<double>& synapse_trace_vector,
         double mle_log_loss,
@@ -104,22 +86,11 @@ on_epoch_end_stats_logger(const uint32_t time_steps) {
     };
 }
 
-// DO NOT USE THIS AS IT IS BROKEN
-// FIXME: SERIOUS BUG - Problem likely in copy and move constructors of SignalList
-// FIXME: The parameters are copied into lambda zero-initialized or random.
-// FIXME: Sometimes is correctly copies while most of the time it zero inits or random values.
-// FIXME: With the order &generator, inpurs, time_steps it copies time_steps correctly but messes up inputs.
-// FIXME: With the order &generator, &inputs, time_steps it still messes up inputs.
-// FIXME: shared_ptr did not help as it has 0 count to 0 inside the lambda!
-// FIXME: SERIOUS BUG
 TrainingProgressTrackAndControlFunction
 on_epoch_end_net_forward(
     const uint32_t time_steps,
     std::shared_ptr<SignalList> input_signals,
     std::default_random_engine& generator) {
-
-    // Here it is 2
-    std::cout << input_signals.use_count() << std::endl;
 
     return [&generator, &input_signals, time_steps](
             const Network& net, 
@@ -129,12 +100,10 @@ on_epoch_end_net_forward(
             uint32_t epoch, 
             uint32_t t
         ) -> bool {
-            // Here it is 0 - WHY????
-            std::cout << input_signals.use_count() << std::endl;
-
             if (t == time_steps - 1) {
                 SignalList out = net.forward(*input_signals, generator);
 
+                std::cout << "Predictions on epoch " << epoch << std::endl;
                 std::cout << out;
             }
 

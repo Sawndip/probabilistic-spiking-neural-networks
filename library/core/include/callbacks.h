@@ -33,7 +33,7 @@ TrainingProgressTrackAndControlFunction;
  * This indicates the cases when there are no connections.
  */ 
 TrainingProgressTrackAndControlFunction 
-csv_writer(std::string output_path, const uint32_t n_neurons);
+csv_writer(std::string output_path, const uint32_t n_neurons, const uint32_t time_steps);
 
 /*!
  * Show some numbers so we can track how the loss is changing from the command line.
