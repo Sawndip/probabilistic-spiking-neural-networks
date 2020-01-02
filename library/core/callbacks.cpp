@@ -74,6 +74,7 @@ on_epoch_end_stats_logger(const uint32_t time_steps) {
         uint32_t epoch, 
         uint32_t t
     ) -> bool {
+        // Do not print if not epoch end
         if (t != time_steps - 1)
             return false;
 

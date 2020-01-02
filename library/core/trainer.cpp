@@ -194,6 +194,11 @@ void FullyObservedOnlineTrainer::update_pass_one_time_step(
     }
 }
 
+// The log-loss is sum s_i,t * log(u_i,t) + (1 - s_i,t * log(1 - u_i,t))
+// The code calculates that formula with some nan checking.
+// It provides partial losses in a sense that it can calculate the loss
+// after the first timestep, there is no need to wait till end of epoch.
+// This is why we need to NaN initialize everything.
 double FullyObservedOnlineTrainer::calculate_mll_loss() {
     double log_loss = 0.0;
 
@@ -229,7 +234,6 @@ void FullyObservedOnlineTrainer::train(
 
     check_training_params(params);
 
-    // The algorithm
     const uint32_t N = net.total_neurons();
     const uint32_t T = example_input.time_steps();
 
@@ -248,6 +252,7 @@ void FullyObservedOnlineTrainer::train(
                 t, net, params
             );
 
+            // Call the callback if there is one
             if (callback != nullptr) {
                 double mle_log_loss = calculate_mll_loss();
 
@@ -265,4 +270,7 @@ void FullyObservedOnlineTrainer::train(
             }
         }
     }
+
+    if (!should_stop)
+        std::cout << "Stopping training after all " << params.epochs << " epochs passed." << std::endl;
 }

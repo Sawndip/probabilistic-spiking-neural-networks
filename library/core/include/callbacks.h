@@ -31,6 +31,11 @@ TrainingProgressTrackAndControlFunction;
  * 
  * Some values for synapse weights and gradients in the output can be NaN.
  * This indicates the cases when there are no connections.
+ * 
+ * \param string output_path - Where to write the stats
+ * \param uint32_t n_neurons - How many neurons are there in the net, needed for constructing
+ * the header
+ * \param uint32_t time_steps - How many time steps per epoch, needed for checking for epoch end.
  */ 
 TrainingProgressTrackAndControlFunction 
 csv_writer(std::string output_path, const uint32_t n_neurons, const uint32_t time_steps);
@@ -44,14 +49,15 @@ csv_writer(std::string output_path, const uint32_t n_neurons, const uint32_t tim
 TrainingProgressTrackAndControlFunction
 on_epoch_end_stats_logger(const uint32_t time_steps);
 
-// DO NOT USE THIS AS IT IS BROKEN
 /*!
  * Peform forward pass on the network after an epoch has ended.
  * Prints the output signals to stdout.
  * 
  * \param uint32_t time_steps - The check is done only when epoch ends.
  * We check for epoch end if t == time_steps - 1 * 
- * \param SignalList input - The input to the neural network.
+ * \param std::shared_ptr<SignalList> input - The input to the neural network,
+ * passed as shared_ptr as the lambda chain can go deep and it is safer this way
+ * to pass the shared_ptr instead of references. We try to avoid copies.
  * \param std::default_random_engine& generator - The generator used for the network forward pass.
  */ 
 TrainingProgressTrackAndControlFunction
@@ -98,6 +104,11 @@ stop_on_acceptable_loss(
  * Merge some iterable of callback functions into one callback function.
  * The rule is that all calbacks are invoked and the training will stop
  * if at least one callback returns True
+ * 
+ * This is the most general version which works with two pointers
+ * to start and end of an iterable collection.
+ * This should not be used and the two overloads taking a vector or an
+ * initializer_list are preferred.
  */ 
 TrainingProgressTrackAndControlFunction 
 merge_callbacks(const TrainingProgressTrackAndControlFunction* begin,

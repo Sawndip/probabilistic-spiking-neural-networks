@@ -15,13 +15,30 @@ struct TrainingParameters {
 class Trainer {
     public:
         /*!
+         * \brief The only public method of this class. It does what it name tells it.
+         * 
+         * There are two versions, one for no-hidden and one for networks with hidden neurons.
+         * The two versions are present in the two subclasses.
+         * 
          * Note: The training procedure modifies the network in place.
+         * 
+         * \param Network& net - The neural network, modified in place.
+         * \param const SignalList& input - The input signals.
+         * \param const SignalList& wanted_output - The target signals.
+         * \param const TrainingParams& params - a struct wrapping the learning rate, e.t. factor and epochs
+         * \param const TrainingProgressTrackAndControlFunction callback = nullptr
+         * The callback which can be used to display and log the progress as well as to
+         * end the training prematurely. Look at callbacks.h for library provided
+         * callbacks. Writing custom callbacks is possible as the type of this parameter
+         * is std::function. If this parameter is nullptr no callback is involved
+         * and the training goes for `param.epochs` epochs.
          */ 
         void train(
             Network& net,
             const SignalList& input,
             const SignalList& wanted_output,
-            const TrainingParameters& params);
+            const TrainingParameters& params,
+            TrainingProgressTrackAndControlFunction callback = nullptr);
 };
 
 class FullyObservedOnlineTrainer : public Trainer {
@@ -84,21 +101,44 @@ class FullyObservedOnlineTrainer : public Trainer {
             const TrainingParameters& params
         ) const;
 
+        /*!
+         * Perform a calculation very similar to that of Network::forward
+         * The primary difference is that we know the ground truth in this
+         * case and thus do not generate spikes randomly.
+         * In addition this method keeps more memory then Network::forward.
+         * For details look at the comments on variables and in the implementation.
+         */ 
         void forward_pass_one_time_step(
              const uint32_t t,
              const Network& net,
              const SignalList& input,
              const SignalList& wanted_output);
 
-        double smoothed_bias_gradient(const NeuronId& i, double gradient, double et_factor);
-        double smoothed_synapse_gradient(const NeuronId& j, const NeuronId& i, const uint32_t N,
+        /*!
+         * This method calculates a smoothed exp time-averaging of the gradients for bias. 
+         */ 
+        double smoothed_bias_gradient(const NeuronId& i, 
+                                      double gradient, double et_factor);
+         /*!
+         * This method calculates a smoothed exp time-averaging of the gradients for synapse weights. 
+         */ 
+        double smoothed_synapse_gradient(const NeuronId& j, const NeuronId& i, 
+                                         const uint32_t N,
                                          double gradient, double et_factor);
 
+        /*!
+         * This method updates the network's weights and biases after a single time step. 
+         * It calculates smoothed gradients and performs the gradient ascent step
+         */
         void update_pass_one_time_step(
             const uint32_t t,
             Network& net,
             const TrainingParameters& params);
 
+        /*!
+         * Calculate the maximum likelihood loss. 
+         * Technically it is a gain as we seek to maximize it.
+         */
         double calculate_mll_loss();
 
     public:

@@ -62,6 +62,10 @@ double convolve(const Synapse& syn,
  */ 
 void print_vector(std::vector<double> v, std::string name);
 
+/*!
+ * Calculate a NaN safe L2 norm of a vector.
+ * NaNs are treated as 0s
+ */ 
 double vector_l2_norm(const std::vector<double>& v);
 
 #endif
