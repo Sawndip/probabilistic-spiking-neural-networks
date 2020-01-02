@@ -19,31 +19,37 @@ void debug_run() {
     Signal o1 = Signal::from_string("^^^^^^");
     Signal o2 = Signal::from_string("______");
 
-    SignalList inputs;
-    inputs.add(i1);
-    inputs.add(i2);
-
     SignalList wanted_outputs;
     wanted_outputs.add(o1);
     wanted_outputs.add(o2);
 
+    std::shared_ptr<SignalList> inputs_ptr(new SignalList());
+    inputs_ptr->add(i1);
+    inputs_ptr->add(i2);
+
     FullyObservedOnlineTrainer trainer;
 
     std::cout << "Observed result with no training." << std::endl;
-    SignalList f0 = net.forward(inputs, generator);
+    SignalList f0 = net.forward(*inputs_ptr, generator);
     std::cout << f0;
 
-    const uint32_t T = inputs.time_steps();
+    const uint32_t T = inputs_ptr->time_steps();
 
+    std::string output_csv_path = "test_fully_observed_trainer.csv";
+
+    // What is the problem with the initializer list and anything more
+    // complicated than a double or int being wrongly copied 
+    // to the lambdas inside...????
+    // [It is not limited to our custom types but also problems std::string as well]
     auto callback = merge_callbacks({
         on_epoch_end_stats_logger(T),
-        on_epoch_end_net_forward(T, inputs, generator),
-        // csv_writer("test_fully_observed_trainer.csv", net.total_neurons()),
+        // on_epoch_end_net_forward(T, inputs_ptr, generator),
+        csv_writer(output_csv_path, net.total_neurons()),
         stop_on_acceptable_loss(T, -7.0),
         stop_on_small_gradients(T, 0.4, 0.15)
     });
 
-    trainer.train(net, inputs, wanted_outputs, {0.05, 0.5, 40}, callback);
+    trainer.train(net, *inputs_ptr, wanted_outputs, {0.05, 0.5, 40}, callback);
 }
 
 int main(int argc, char** argv) {

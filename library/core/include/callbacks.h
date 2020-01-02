@@ -7,6 +7,7 @@
 #include<functional>
 #include<string>
 #include<initializer_list>
+#include<memory>
 
 using namespace std;
 
@@ -32,7 +33,7 @@ TrainingProgressTrackAndControlFunction;
  * This indicates the cases when there are no connections.
  */ 
 TrainingProgressTrackAndControlFunction 
-csv_writer(const std::string& output_path, const uint32_t n_neurons);
+csv_writer(std::string output_path, const uint32_t n_neurons);
 
 /*!
  * Show some numbers so we can track how the loss is changing from the command line.
@@ -43,19 +44,20 @@ csv_writer(const std::string& output_path, const uint32_t n_neurons);
 TrainingProgressTrackAndControlFunction
 on_epoch_end_stats_logger(const uint32_t time_steps);
 
+// DO NOT USE THIS AS IT IS BROKEN
 /*!
  * Peform forward pass on the network after an epoch has ended.
  * Prints the output signals to stdout.
  * 
  * \param uint32_t time_steps - The check is done only when epoch ends.
  * We check for epoch end if t == time_steps - 1 * 
- * \param SignalList& input - The input to the neural network.
+ * \param SignalList input - The input to the neural network.
  * \param std::default_random_engine& generator - The generator used for the network forward pass.
  */ 
 TrainingProgressTrackAndControlFunction
 on_epoch_end_net_forward(
     const uint32_t time_steps,
-    const SignalList& input,
+    std::shared_ptr<SignalList> input_signals,
     std::default_random_engine& generator);
 
 /*!
