@@ -1,2 +1,5 @@
 .vscode/
 build/
+test_fully_observed_trainer.csv
+.kdev4/
+ProbabilisticSpikingNeuralNetworks.kdev4
