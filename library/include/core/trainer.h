@@ -1,8 +1,8 @@
-#ifndef TRAINER_H
-#define TRAINER_H
+#ifndef CORE_TRAINER_H
+#define CORE_TRAINER_H
 
-#include "core/include/network.h"
-#include "core/include/callbacks.h"
+#include <core/network.h>
+#include <core/callbacks.h>
 
 
 struct TrainingParameters {

@@ -1,13 +1,13 @@
-#ifndef CALLBACKS_H
-#define CALLBACKS_H
+#ifndef CORE_CALLBACKS_H
+#define CORE_CALLBACKS_H
 
-#include "core/include/network.h"
-#include "core/include/util.h"
+#include <core/network.h>
+#include <core/util.h>
 
-#include<functional>
-#include<string>
-#include<initializer_list>
-#include<memory>
+#include <functional>
+#include <string>
+#include <initializer_list>
+#include <memory>
 
 using namespace std;
 

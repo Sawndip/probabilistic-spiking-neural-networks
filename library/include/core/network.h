@@ -1,14 +1,14 @@
-#ifndef NETWORK_H
-#define NETWORK_H
+#ifndef CORE_NETWORK_H
+#define CORE_NETWORK_H
 
-#include<vector>
-#include<cstdint>
-#include<functional>
-#include<random>
+#include <core/types.h>
+#include <core/util.h>
+#include <core/signal.h>
 
-#include "core/include/types.h"
-#include "core/include/util.h"
-#include "core/include/signal.h"
+#include <vector>
+#include <cstdint>
+#include <functional>
+#include <random>
 
 /*!
  * \brief Every neuron is connected to every other neuron irregardles of the neuron type

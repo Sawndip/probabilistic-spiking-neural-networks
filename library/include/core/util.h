@@ -1,8 +1,8 @@
-#ifndef UTIL_H
-#define UTIL_H
+#ifndef CORE_UTIL_H
+#define CORE_UTIL_H
 
-#include "core/include/signal.h"
-#include "core/include/types.h"
+#include <core/signal.h>
+#include <core/types.h>
 
 #include <vector>
 #include <cstdint>

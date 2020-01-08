@@ -1,7 +1,8 @@
+#include <core/signal.h>
+#include <generator/deterministic.h>
+
 #include <iostream>
 
-#include "core/include/signal.h"
-#include "generator/include/deterministic.h"
 
 void run_test(uint32_t N1, uint32_t N2, uint32_t N3, uint32_t N4) {
     auto mod = 4;

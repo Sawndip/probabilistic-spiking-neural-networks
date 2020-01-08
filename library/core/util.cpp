@@ -1,10 +1,10 @@
-#include "core/include/util.h"
+#include <core/util.h>
 
-#include<cmath>
-#include<numeric>
+#include <cmath>
+#include <numeric>
 
-#include<stdexcept>
-#include<iostream>
+#include <stdexcept>
+#include <iostream>
 
 
 double sigmoid(double x) {

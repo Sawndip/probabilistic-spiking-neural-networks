@@ -1,7 +1,8 @@
+#include <core/signal.h>
+#include <generator/deterministic.h>
+
 #include <iostream>
 
-#include "core/include/signal.h"
-#include "generator/include/deterministic.h"
 
 int main(int argc, char** argv) {
     uint32_t N1  = std::stoi(argv[1]);

@@ -1,11 +1,11 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef CORE_TYPES_H
+#define CORE_TYPES_H
 
-#include<vector>
-#include<functional>
-#include<cstdint>
+#include <cereal/types/vector.hpp>
 
-#include<cereal/types/vector.hpp>
+#include <vector>
+#include <functional>
+#include <cstdint>
 
 /*!
  * A matrix of doubles is used intensively in both forward and

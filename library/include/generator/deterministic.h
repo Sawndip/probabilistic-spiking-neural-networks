@@ -1,10 +1,10 @@
-#include "core/include/signal.h"
+#ifndef GENERATOR_DETERMINISTIC_H
+#define GENERATOR_DETERMINISTIC_H
+
+#include <core/signal.h>
 
 #include <string>
 #include <bitset>
-
-#ifndef DETERMINISTIC_H
-#define DETERMINISTIC_H
 
 /*!
  * \brief 

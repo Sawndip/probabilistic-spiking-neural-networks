@@ -1,7 +1,7 @@
-#include "core/include/network.h"
+#include <core/network.h>
 
-#include<random>
-#include<iostream>
+#include <random>
+#include <iostream>
 
 void debug_run() {
     std::default_random_engine generator;

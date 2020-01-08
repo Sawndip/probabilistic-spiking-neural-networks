@@ -1,11 +1,13 @@
-#include "core/include/signal.h"
-#include "core/include/network.h"
-#include "core/include/trainer.h"
-#include "generator/include/deterministic.h"
+#include <core/signal.h>
+#include <core/network.h>
+#include <core/trainer.h>
 
-#include<iostream>
-#include<random>
-#include<algorithm>
+#include <generator/deterministic.h>
+
+#include <iostream>
+#include <random>
+#include <algorithm>
+
 
 void debug_run() {
     std::default_random_engine generator;

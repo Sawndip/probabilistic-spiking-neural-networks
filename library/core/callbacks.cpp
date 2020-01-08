@@ -1,8 +1,8 @@
-#include "core/include/callbacks.h"
+#include <core/callbacks.h>
 
-#include<fstream>
-#include<algorithm>
-#include<iostream>
+#include <fstream>
+#include <algorithm>
+#include <iostream>
 
 // TODO: Also write biases and weights to the output, not just the gradients
 TrainingProgressTrackAndControlFunction 
