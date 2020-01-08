@@ -5,6 +5,8 @@
 #include<functional>
 #include<cstdint>
 
+#include<cereal/types/vector.hpp>
+
 /*!
  * A matrix of doubles is used intensively in both forward and
  * training algorithms of the SNN.
@@ -44,6 +46,12 @@ struct Neuron {
 
     std::vector<NeuronId> predecessor_neurons;
     std::vector<NeuronId> successor_neurons;
+
+    // Cereal serialize method
+    template<class Archive>
+    void serialize(Archive& archive) {
+        archive(type, id, bias, predecessor_neurons, successor_neurons);
+    }
 };
 
 /*!
@@ -67,6 +75,12 @@ struct Synapse {
     NeuronId to;
 
     std::vector<double> kernel;
+    
+    // Cereal serialize method
+    template<class Archive>
+    void serialize(Archive& archive) {
+        archive(weight, from, to, kernel);
+    }
 };
 
 /*!

@@ -17,7 +17,8 @@ set (test_dirs
     merge
     sigmoid
     kernels
-    network)
+    network
+    serialization)
 
 foreach(td ${test_dirs})
     add_test_dir(${td})

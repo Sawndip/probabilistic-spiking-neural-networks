@@ -115,6 +115,8 @@ class Network {
                 WeightInitializerFunction weight_init_func,
                 KernelInitializerFunction kernel_init_func = default_exponential_kernels()
                );
+        
+        Network(const std::string& saved_network_path);
 
         /*!
          * \brief Accessor method for a single Neuron.
@@ -169,6 +171,12 @@ class Network {
         const SignalList forward(const SignalList& input,
                                  std::default_random_engine& generator) const;
 
+        /*!
+         * \brief Save the neural network in a cereal binary archive.
+         * \param std::string& path - Path where to save the network.
+         */ 
+        void save(const std::string& path);
+                                 
         friend std::ostream& operator<<(std::ostream&, const Network&);
 };
 

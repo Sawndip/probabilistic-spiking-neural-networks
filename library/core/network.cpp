@@ -1,8 +1,12 @@
 #include "core/include/network.h"
 
-#include<random>
-#include<cmath>
-#include<algorithm>
+#include <random>
+#include <cmath>
+#include <algorithm>
+
+#include <fstream>
+#include <cereal/cereal.hpp>
+#include <cereal/archives/portable_binary.hpp>
 
 // Everything to everything including self loops
 NetworkGeneratorFunction fully_connected_init() {
@@ -169,6 +173,7 @@ void Network::init_connections(NetworkGeneratorFunction network_gen_func,
                 n2.predecessor_neurons.push_back(n1.id);
             } else {
                 // These are the unused synapses. Values initialized to impossible.
+                // This is not very good for performance. Helps when debugging tho.
                 this->synapses[idx].from   = this->neurons.size() + 1e9;
                 this->synapses[idx].to     = this->neurons.size() + 1e9;
                 this->synapses[idx].weight = std::nan("");
@@ -224,6 +229,15 @@ Network::Network(uint32_t n_input,
     this->init_neuron_list();
     this->init_connections(network_gen_func, kernel_init_func);
     this->init_weights(weight_init_func);
+}
+
+Network::Network(const std::string& saved_network_path) {
+    std::ifstream is(saved_network_path, std::ios::binary);
+    cereal::PortableBinaryInputArchive archive(is);
+    
+    archive(n_input, n_hidden, n_output);
+    archive(neurons);
+    archive(synapses);
 }
 
 Neuron& Network::neuron(const NeuronId id) {
@@ -354,6 +368,15 @@ const SignalList Network::forward(const SignalList& input,
     }
 
     return output;
+}
+
+void Network::save(const std::string& path) {
+    std::ofstream os(path, std::ios::binary);
+    cereal::PortableBinaryOutputArchive archive(os);
+    
+    archive(n_input, n_hidden, n_output);
+    archive(neurons);
+    archive(synapses);
 }
 
 // This is also very slow. Of 8 seconds,
