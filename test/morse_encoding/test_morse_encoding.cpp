@@ -3,6 +3,9 @@
 
 #include <iostream>
 
+using namespace core::signal;
+using namespace generator::deterministic;
+
 void console_test(int argc, char** argv) {
     std::string test_str = argv[1];
     

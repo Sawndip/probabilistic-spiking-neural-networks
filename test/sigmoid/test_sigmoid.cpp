@@ -3,6 +3,9 @@
 #include <iostream>
 #include <iomanip>
 
+using namespace core::util;
+
+
 int main(int argc, char** argv) {
     std::cout << "x, sigmoid(x)" << std::endl;
 

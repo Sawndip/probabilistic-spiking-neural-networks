@@ -3,6 +3,9 @@
 #include <random>
 #include <iostream>
 
+using namespace core::network;
+using namespace core::signal;
+
 void debug_run() {
     std::default_random_engine generator;
 

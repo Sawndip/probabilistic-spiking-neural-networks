@@ -8,6 +8,13 @@
 #include <random>
 #include <algorithm>
 
+using namespace core::network;
+using namespace core::signal;
+using namespace core::training;
+using namespace core::training::callbacks;
+
+using namespace generator::deterministic;
+
 
 void debug_run() {
     std::default_random_engine generator;

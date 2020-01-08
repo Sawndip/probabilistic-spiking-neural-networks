@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+using namespace core::util;
+
 
 int test_ffe(char** argv) {
     const uint32_t window_size = std::stoi(argv[2]);

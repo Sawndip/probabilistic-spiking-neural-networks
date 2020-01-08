@@ -3,6 +3,9 @@
 
 #include <iostream>
 
+using namespace core::signal;
+using namespace generator::deterministic;
+
 
 void run_test(uint32_t N1, uint32_t N2, uint32_t N3, uint32_t N4) {
     auto mod = 4;

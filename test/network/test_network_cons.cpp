@@ -3,6 +3,8 @@
 #include <iostream>
 #include <random>
 
+using namespace core::network;
+
 // Called in debugger. Used only during active development.
 void debug_test() {
     std::default_random_engine generator;

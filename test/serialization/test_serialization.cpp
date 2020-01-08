@@ -2,6 +2,9 @@
 
 #include<random>
 
+using namespace core::network;
+
+
 void basic_test() {
     std::default_random_engine generator;
     generator.seed(1337);

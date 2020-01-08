@@ -3,6 +3,9 @@
 
 #include <iostream>
 
+using namespace core::signal;
+using namespace generator::deterministic;
+
 void test(const uint32_t n_steps, 
           const uint32_t mod, 
           const uint32_t offset) {

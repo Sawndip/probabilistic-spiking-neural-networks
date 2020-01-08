@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+using namespace core::signal;
+using namespace generator::deterministic;
 
 int main(int argc, char** argv) {
     uint32_t N1  = std::stoi(argv[1]);
