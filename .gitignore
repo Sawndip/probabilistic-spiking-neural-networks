@@ -1,5 +1,6 @@
 .vscode/
 build/
 test_fully_observed_trainer.csv
+test_serialization.cereal
 .kdev4/
 ProbabilisticSpikingNeuralNetworks.kdev4

@@ -50,3 +50,27 @@ OUTPUT 15 | INPUT 0, INPUT 1, INPUT 2, INPUT 3, INPUT 4, INPUT 5, INPUT 6, INPUT
 OUTPUT 16 | INPUT 0, INPUT 1, INPUT 2, INPUT 3, INPUT 4, INPUT 5, INPUT 6, INPUT 7, INPUT 8, INPUT 9, HIDDEN 10, HIDDEN 11, HIDDEN 12, HIDDEN 13, HIDDEN 14, OUTPUT 15, OUTPUT 16, OUTPUT 17, | 18
 OUTPUT 17 | INPUT 0, INPUT 1, INPUT 2, INPUT 3, INPUT 4, INPUT 5, INPUT 6, INPUT 7, INPUT 8, INPUT 9, HIDDEN 10, HIDDEN 11, HIDDEN 12, HIDDEN 13, HIDDEN 14, OUTPUT 15, OUTPUT 16, OUTPUT 17, | 18
 These two should be identical")
+
+foreach(init_func RANGE 3)
+    foreach (wei_func RANGE 2)
+        # Last 0 means we expect no crash
+        make_test(
+            test_serialization
+            "NO_REGEX"
+            2 3 1 ${init_func} ${wei_func} 0
+        )
+    endforeach()
+endforeach()
+
+# Test all combinations of network and weight intitializers and make sure none crashes.
+# Here we use 200 input, 300 hidden and 100 output neurons.
+foreach(init_func RANGE 3)
+    foreach (wei_func RANGE 2)
+        # Last 0 means we expect no crash
+        make_test(
+            test_serialization
+            "NO_REGEX"
+            200 300 100 ${init_func} ${wei_func} 0
+        )
+    endforeach()
+endforeach()
