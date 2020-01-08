@@ -1,4 +1,4 @@
-#include <generator/deterministic.h>
+#include <generator/deterministic.hpp>
 
 #include <map>
 #include <array>

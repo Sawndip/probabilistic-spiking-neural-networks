@@ -1,7 +1,7 @@
-#ifndef GENERATOR_DETERMINISTIC_H
-#define GENERATOR_DETERMINISTIC_H
+#ifndef GENERATOR_DETERMINISTIC_HPP
+#define GENERATOR_DETERMINISTIC_HPP
 
-#include <core/signal.h>
+#include <core/signal.hpp>
 
 #include <string>
 #include <bitset>

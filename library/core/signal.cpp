@@ -1,4 +1,4 @@
-#include <core/signal.h>
+#include <core/signal.hpp>
 
 #include <iostream>
 #include <algorithm>

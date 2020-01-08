@@ -1,4 +1,4 @@
-#include <core/util.h>
+#include <core/util.hpp>
 
 #include <cmath>
 #include <numeric>

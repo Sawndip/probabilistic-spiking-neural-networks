@@ -1,5 +1,5 @@
-#ifndef CORE_SIGNAL_H
-#define CORE_SIGNAL_H
+#ifndef CORE_SIGNAL_HPP
+#define CORE_SIGNAL_HPP
 
 #include <vector>
 #include <ostream>

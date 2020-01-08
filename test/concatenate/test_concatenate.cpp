@@ -1,5 +1,5 @@
-#include <core/signal.h>
-#include <generator/deterministic.h>
+#include <core/signal.hpp>
+#include <generator/deterministic.hpp>
 
 #include <iostream>
 

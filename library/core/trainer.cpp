@@ -1,4 +1,4 @@
-#include <core/trainer.h>
+#include <core/trainer.hpp>
 
 #include <iostream>
 

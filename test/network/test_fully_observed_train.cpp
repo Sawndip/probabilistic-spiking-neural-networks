@@ -1,8 +1,8 @@
-#include <core/signal.h>
-#include <core/network.h>
-#include <core/trainer.h>
+#include <core/signal.hpp>
+#include <core/network.hpp>
+#include <core/trainer.hpp>
 
-#include <generator/deterministic.h>
+#include <generator/deterministic.hpp>
 
 #include <iostream>
 #include <random>

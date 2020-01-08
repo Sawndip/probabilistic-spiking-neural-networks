@@ -1,4 +1,4 @@
-#include <core/network.h>
+#include <core/network.hpp>
 
 #include <random>
 #include <cmath>

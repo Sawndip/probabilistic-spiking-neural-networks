@@ -1,9 +1,9 @@
-#ifndef CORE_NETWORK_H
-#define CORE_NETWORK_H
+#ifndef CORE_NETWORK_HPP
+#define CORE_NETWORK_HPP
 
-#include <core/types.h>
-#include <core/util.h>
-#include <core/signal.h>
+#include <core/types.hpp>
+#include <core/util.hpp>
+#include <core/signal.hpp>
 
 #include <vector>
 #include <cstdint>

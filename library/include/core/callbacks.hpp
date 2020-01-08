@@ -1,8 +1,8 @@
-#ifndef CORE_CALLBACKS_H
-#define CORE_CALLBACKS_H
+#ifndef CORE_CALLBACKS_HPP
+#define CORE_CALLBACKS_HPP
 
-#include <core/network.h>
-#include <core/util.h>
+#include <core/network.hpp>
+#include <core/util.hpp>
 
 #include <functional>
 #include <string>

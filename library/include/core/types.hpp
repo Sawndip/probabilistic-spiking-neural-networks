@@ -1,5 +1,5 @@
-#ifndef CORE_TYPES_H
-#define CORE_TYPES_H
+#ifndef CORE_TYPES_HPP
+#define CORE_TYPES_HPP
 
 #include <cereal/types/vector.hpp>
 
