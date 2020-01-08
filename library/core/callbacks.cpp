@@ -90,7 +90,7 @@ on_epoch_end_stats_logger(const uint32_t time_steps) {
 TrainingProgressTrackAndControlFunction
 on_epoch_end_net_forward(
     const uint32_t time_steps,
-    std::shared_ptr<SignalList> input_signals,
+    const SignalList& input_signals,
     std::default_random_engine& generator) {
 
     return [&generator, &input_signals, time_steps](
@@ -102,7 +102,7 @@ on_epoch_end_net_forward(
             uint32_t t
         ) -> bool {
             if (t == time_steps - 1) {
-                SignalList out = net.forward(*input_signals, generator);
+                SignalList out = net.forward(input_signals, generator);
 
                 std::cout << "Predictions on epoch " << epoch << std::endl;
                 std::cout << out;
@@ -179,13 +179,6 @@ merge_callbacks(const TrainingProgressTrackAndControlFunction* begin,
             [&](const auto& f)    -> bool { return f(net, bias_trace_vector, synapse_trace_vector, 
                                                      mll, epoch, t);  }
         );
-        // Much easier to debug this way, code kept just in case
-        // auto it = begin;
-        // bool stop = false;
-        // while (it != end) {
-        //     stop = stop || it->operator()(net, bias_trace_vector, synapse_trace_vector, mll, epoch, t);
-        //     it++; }
-        // return stop;
     };
 }
 

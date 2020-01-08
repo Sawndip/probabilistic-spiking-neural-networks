@@ -55,15 +55,13 @@ on_epoch_end_stats_logger(const uint32_t time_steps);
  * 
  * \param uint32_t time_steps - The check is done only when epoch ends.
  * We check for epoch end if t == time_steps - 1 * 
- * \param std::shared_ptr<SignalList> input - The input to the neural network,
- * passed as shared_ptr as the lambda chain can go deep and it is safer this way
- * to pass the shared_ptr instead of references. We try to avoid copies.
+ * \param const SignalList& input - The input to the neural network
  * \param std::default_random_engine& generator - The generator used for the network forward pass.
  */ 
 TrainingProgressTrackAndControlFunction
 on_epoch_end_net_forward(
     const uint32_t time_steps,
-    std::shared_ptr<SignalList> input_signals,
+    const SignalList& input_signals,
     std::default_random_engine& generator);
 
 /*!
