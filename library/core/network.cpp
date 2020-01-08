@@ -263,13 +263,13 @@ namespace core::network {
         return this->synapses[j * this->neurons.size() + i];
     }
 
-    const uint32_t Network::total_neurons() const {
+    uint32_t Network::total_neurons() const {
         return this->neurons.size();
     }
 
-    const uint32_t Network::total_inputs() const { return n_input; }
-    const uint32_t Network::total_hidden() const { return n_hidden; }
-    const uint32_t Network::total_outputs() const { return n_output; }
+    uint32_t Network::total_inputs() const { return n_input; }
+    uint32_t Network::total_hidden() const { return n_hidden; }
+    uint32_t Network::total_outputs() const { return n_output; }
 
     void Network::check_forward_argument(const SignalList& input) const {
         // Check if the input signals and the number of input neurons is equal

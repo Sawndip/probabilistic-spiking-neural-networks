@@ -29,7 +29,7 @@ namespace core::signal {
             /*!
             * \brief The number of time steps this signal lasts
             */
-            const uint32_t length() const;
+            uint32_t length() const;
 
             /*!
             * \brief Make all bits zero
@@ -77,9 +77,9 @@ namespace core::signal {
 
             const signal_list_t& cdata() const;
 
-            const uint32_t number_of_signals() const;
+            uint32_t number_of_signals() const;
 
-            const uint32_t time_steps() const;
+            uint32_t time_steps() const;
 
             /*!
             * \brief Add a new signal to the end of this list.

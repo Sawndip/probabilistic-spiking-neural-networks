@@ -21,7 +21,7 @@ namespace core::signal {
         return this->signal;
     }
 
-    const uint32_t Signal::length() const {
+    uint32_t Signal::length() const {
         return this->signal.size();
     }
 
@@ -79,11 +79,11 @@ namespace core::signal {
         return this->signals;
     }
 
-    const uint32_t SignalList::number_of_signals() const {
+    uint32_t SignalList::number_of_signals() const {
         return signals.size();
     }
 
-    const uint32_t SignalList::time_steps() const {
+    uint32_t SignalList::time_steps() const {
         if (signals.size() == 0)
             return 0;
 

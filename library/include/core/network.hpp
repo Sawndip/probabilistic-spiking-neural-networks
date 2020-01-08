@@ -162,10 +162,10 @@ namespace core::network {
             * Return the number of neurons in this network.
             * The other 3 are very similar and self explanatory.
             */ 
-            const uint32_t total_neurons() const;
-            const uint32_t total_inputs() const;
-            const uint32_t total_hidden() const;
-            const uint32_t total_outputs() const;
+            uint32_t total_neurons() const;
+            uint32_t total_inputs() const;
+            uint32_t total_hidden() const;
+            uint32_t total_outputs() const;
 
             /*!
             * Performs two checks
