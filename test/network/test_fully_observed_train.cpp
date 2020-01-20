@@ -1,5 +1,6 @@
 #include <core/signal.hpp>
 #include <core/network.hpp>
+#include <core/metrics.hpp>
 #include <core/trainer.hpp>
 
 #include <generator/deterministic.hpp>
@@ -10,6 +11,8 @@
 
 using namespace core::network;
 using namespace core::signal;
+
+using namespace core::metrics;
 using namespace core::training;
 using namespace core::training::callbacks;
 
@@ -45,6 +48,8 @@ void debug_run() {
 
     const uint32_t T = inputs.time_steps();
 
+    Dataset ground_truth(inputs, wanted_outputs);
+
     std::string output_csv_path("test_fully_observed_trainer.csv");
 
     std::initializer_list<TrainingProgressTrackAndControlFunction>
@@ -53,7 +58,13 @@ void debug_run() {
         on_epoch_end_net_forward(T, inputs, generator),
         csv_writer(output_csv_path, net.total_neurons(), T),
         stop_on_acceptable_loss(T, -7.0),
-        stop_on_small_gradients(T, 0.4, 0.15)
+        stop_on_small_gradients(T, 0.4, 0.15),
+        metric_report_control(
+            hamming_distance, 
+            "hamming_distance",
+            T, ground_truth, generator,
+            MetricControlType::REPORT | MetricControlType::LESS_THAN,
+            0.05)
     };
     
     auto callback = merge_callbacks(callbacks);
@@ -144,13 +155,21 @@ int test_run(int argc, char** argv) {
 
             std::string output_csv_path("/tmp/test.csv");
 
+            Dataset ground_truth(in, out);
+
             std::initializer_list<TrainingProgressTrackAndControlFunction>
             callbacks = {
                 on_epoch_end_stats_logger(T),
                 on_epoch_end_net_forward(T, in, generator),
                 csv_writer(output_csv_path, net.total_neurons(), T),
                 stop_on_acceptable_loss(T, -7.0),
-                stop_on_small_gradients(T, 0.4, 0.15)
+                stop_on_small_gradients(T, 0.4, 0.15),
+                metric_report_control(
+                    hamming_distance, 
+                    "hamming_distance",
+                    T, ground_truth, generator,
+                    MetricControlType::REPORT | MetricControlType::LESS_THAN,
+                    0.05)
             };
             
             auto callback = merge_callbacks(callbacks);

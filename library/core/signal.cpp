@@ -113,8 +113,8 @@ namespace core::signal {
             signal_t& source_sig = signals[i].data();
             
             target_sig.insert(target_sig.end(), 
-                            source_sig.begin(), 
-                            source_sig.end());
+                              source_sig.begin(), 
+                              source_sig.end());
         }
 
         // Delete all but the first signal
@@ -135,5 +135,30 @@ namespace core::signal {
         }
 
         return stream;
+    }
+
+    Dataset::Dataset() {
+
+    }
+
+    Dataset::Dataset(const SignalList& input, 
+                     const SignalList& output) {
+        dataset.push_back(std::make_tuple(input, output));
+    }
+
+    dataset_t& Dataset::data() {
+        return dataset;
+    }
+
+    const dataset_t& Dataset::cdata() const {
+        return dataset;
+    }
+
+    void Dataset::check_validity() const {
+        throw std::logic_error("Not yet implemented");
+    }
+
+    void Dataset::shuffle(std::default_random_engine& generator) {
+        std::shuffle(dataset.begin(), dataset.end(), generator);
     }
 };

@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <ostream>
+#include <random>
 
 namespace core::signal {
     typedef std::vector<bool> signal_t;
@@ -112,6 +113,60 @@ namespace core::signal {
             
             friend std::ostream& operator<<(std::ostream&, SignalList&); 
     };
+ 
+    typedef std::vector<std::tuple<SignalList, SignalList>> dataset_t;
+
+    /*!
+     * \brief The Dataset is a collection of input, output tuples.
+     * 
+     * The first element of the tuple is SignalList type and corresponds to the input signals.
+     * The second elemnt is of type SignalList as well and corresponds to the output signals.
+     * 
+     * \note The number of input and output signals does not need to be equal, only the durations need
+     * to match.
+     */
+    class Dataset {
+        private:
+            dataset_t dataset;
+
+        public:
+            Dataset();
+
+            /*!
+             * \brief Single element dataset.
+             * 
+             * To be used temporarily until the training methods are extended to deal with
+             * more than a single input, output pairs
+             */
+            Dataset(const SignalList& input, 
+                    const SignalList& output);
+
+            dataset_t& data();
+            const dataset_t& cdata() const;
+
+            /*!
+             * \brief Checks that the dataset is correct.
+             * 
+             * Throws std::logic_error if it detects any discrepancy.
+             * 
+             * The checks made are:
+             * - For each pair, neither input nor output are empty (of length 0).
+             * - For each pair, the duration of all input signals is equal (\see SignalList::equalize_length())
+             * - For each pair, the duration of all output signals is equal (\see SignalList::equalize_length())
+             * - For each pair, the duration input and output signals is equal.
+             * 
+             * For different pairs the durations can be different but inside the pair they must be equal.
+             */
+            void check_validity() const;
+
+            /*!
+             * \brief Shuffles the dataset
+             * 
+             * \param default_random_engine& generator - The URNG
+             */
+            void shuffle(std::default_random_engine& generator);
+    };
+
 };
 
 #endif

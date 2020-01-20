@@ -1,6 +1,7 @@
 add_library(pssn SHARED
             core/signal.cpp
             core/util.cpp
+            core/metrics.cpp
             core/callbacks.cpp
             core/trainer.cpp
             core/network.cpp

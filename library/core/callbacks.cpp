@@ -91,7 +91,7 @@ namespace core::training::callbacks {
             return false;
         };
     }
-
+    
     TrainingProgressTrackAndControlFunction
     on_epoch_end_net_forward(
         const uint32_t time_steps,
@@ -162,6 +162,54 @@ namespace core::training::callbacks {
         };
     }
 
+    TrainingProgressTrackAndControlFunction
+    metric_report_control(const Metric& metric, 
+                          const std::string& name,
+                          const uint32_t time_steps,
+                          const Dataset& ground_truth,
+                          std::default_random_engine& generator,
+                          uint32_t control_type,
+                          double threshold_value) {      
+        return [=, &ground_truth, &generator](
+            const Network& net, 
+            const vector<double>&,
+            const vector<double>&,
+            double,
+            uint32_t, 
+            uint32_t t
+        ) -> bool {  
+            if (t == time_steps - 1)
+            {
+                Dataset predictions;
+
+                for (uint32_t i = 0; i < ground_truth.cdata().size(); i++) {
+                    auto& input_signals = std::get<0>(ground_truth.cdata()[i]);
+
+                    SignalList out = net.forward(input_signals, generator);
+
+                    predictions.data().push_back(std::make_tuple(input_signals, out));
+                }
+
+                double metric_value = metric(ground_truth, predictions);
+
+                if (control_type & MetricControlType::REPORT) {
+                    std::cout << name << " : " << metric_value << std::endl;
+                }
+
+                if (control_type & MetricControlType::LESS_THAN) {
+                    return metric_value <= threshold_value;
+                }
+
+                if (control_type & MetricControlType::GREATER_THAN) {
+                    return metric_value >= threshold_value;
+                }
+            }
+
+            // Do not anything when it is not epoch end
+            return false;
+        };
+
+    }
 
     TrainingProgressTrackAndControlFunction 
     merge_callbacks(const TrainingProgressTrackAndControlFunction* begin,
