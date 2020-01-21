@@ -18,7 +18,8 @@ set (test_dirs
     sigmoid
     kernels
     network
-    serialization)
+    serialization
+    metrics)
 
 foreach(td ${test_dirs})
     add_test_dir(${td})
